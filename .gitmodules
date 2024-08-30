@@ -1,0 +1,6 @@
+[submodule "Container-Root/ray/deploy/prometheus/ray-way/Container-Root/ray/deploy/prometheus/ray-way/kuberay"]
+	path = Container-Root/ray/deploy/prometheus/ray-way/Container-Root/ray/deploy/prometheus/ray-way/kuberay
+	url = https://github.com/ray-project/kuberay.git
+[submodule "Container-Root/ray/deploy/prometheus/ray-way/kuberay"]
+	path = Container-Root/ray/deploy/prometheus/ray-way/kuberay
+	url = https://github.com/ray-project/kuberay.git

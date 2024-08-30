@@ -1,0 +1,7 @@
+datasets
+evaluate
+transformers
+accelerate
+sagemaker
+botocore
+scikit-learn
