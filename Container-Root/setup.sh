@@ -66,3 +66,8 @@ EOL
   fi
 fi
 
+# Configure .bashrc
+echo "export PATH=\$PATH:/aws-do-ray/Container-Root/ray/ops" >> /root/.bashrc
+echo "alias re=ray-expose.sh" >> /root/.bashrc
+echo "alias rh=ray-hide.sh" >> /root/.bashrc
+

@@ -16,6 +16,8 @@ spec:
     #pod template
     template:
       spec:
+        #nodeSelector:
+        #  node.kubernetes.io/instance-type: "ml.m5.2xlarge"
         securityContext:
           runAsUser: 0
           runAsGroup: 0
@@ -51,10 +53,10 @@ spec:
                 command: ["/bin/sh","-c","ray stop"]
           resources:
             limits:                                    ## LIMITS: Set resource limits for your head node
-              cpu: 4
+              cpu: 1
               memory: 8Gi
             requests:                                    ## REQUESTS: Set resource requests for your head node
-              cpu: 4
+              cpu: 1
               memory: 8Gi
           ports:
           - containerPort: 6379
@@ -66,19 +68,19 @@ spec:
           - containerPort: 8000
             name: serve
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head node
-          - name: s3-storage
-            mountPath: /s3
+#          - name: s3-storage
+#            mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
         volumes:
           - name: ray-logs
             emptyDir: {}
-          - name: s3-storage
-            persistentVolumeClaim:
-              claimName: s3-claim
+#          - name: s3-storage
+#           persistentVolumeClaim:
+#             claimName: s3-claim
   workerGroupSpecs:
   # the pod replicas in this group typed worker
-  - replicas: 8                                    ## REPLICAS: How many worker pods you want - one per node
+  - replicas: 2                                    ## REPLICAS: How many worker pods you want - one per node
     minReplicas: 1
     maxReplicas: 10
     # logical group name, for this called small-group, also can be functional
@@ -105,12 +107,12 @@ spec:
               memory: 24Gi
               nvidia.com/gpu: 1
             requests:                                    ## REQUESTS: Set resource requests for your worker nodes
-              cpu: 4
+              cpu: 1
               memory: 24Gi
               nvidia.com/gpu: 1
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker nodes
-          - name: s3-storage
-            mountPath: /s3
+#         - name: s3-storage
+#            mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
         # Please add the following taints to the GPU node.
@@ -120,29 +122,29 @@ spec:
             value: "worker"
             effect: "NoSchedule"
         volumes:
-        - name: s3-storage
-          persistentVolumeClaim:
-            claimName: s3-claim
+#        - name: s3-storage
+#          persistentVolumeClaim:
+#            claimName: s3-claim
         - name: ray-logs
           emptyDir: {}
 ---
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
-metadata:
-  name: ray-workers-monitor
-  namespace: prometheus-system
-  labels:
-    release: prometheus
-    ray.io/cluster: rayml # $RAY_CLUSTER_NAME: "kubectl get rayclusters.ray.io"
-spec:
-  jobLabel: ray-workers
-  namespaceSelector:
-    matchNames:
-      - default
-  selector:
-    matchLabels:
-      ray.io/node-type: worker
-  podMetricsEndpoints:
-  - port: metrics
+#apiVersion: monitoring.coreos.com/v1
+#kind: PodMonitor
+#metadata:
+#  name: ray-workers-monitor
+#  namespace: prometheus-system
+#  labels:
+#    release: prometheus
+#    ray.io/cluster: rayml # $RAY_CLUSTER_NAME: "kubectl get rayclusters.ray.io"
+#spec:
+#  jobLabel: ray-workers
+#  namespaceSelector:
+#    matchNames:
+#      - default
+#  selector:
+#    matchLabels:
+#      ray.io/node-type: worker
+#  podMetricsEndpoints:
+#  - port: metrics
 
 

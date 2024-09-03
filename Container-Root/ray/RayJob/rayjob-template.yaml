@@ -1,3 +1,43 @@
+######################Ray code sample#################################
+# this sample is from https://docs.ray.io/en/latest/cluster/job-submission.html#quick-start-example
+# it is mounted into the container and executed to show the Ray job at work
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ray-job-code-sample
+data:
+  sample_code.py: |
+    import ray
+    import os
+    import requests
+
+    ray.init()
+
+    @ray.remote
+    class Counter:
+        def __init__(self):
+            # Used to verify runtimeEnv
+            self.name = os.getenv("counter_name")
+            assert self.name == "test_counter"
+            self.counter = 0
+
+        def inc(self):
+            self.counter += 1
+
+        def get_counter(self):
+            return "{} got {}".format(self.name, self.counter)
+
+    counter = Counter.remote()
+
+    for _ in range(5):
+        ray.get(counter.inc.remote())
+        print(ray.get(counter.get_counter.remote()))
+
+    # Verify that the correct runtime env was used for the job.
+    assert requests.__version__ == "2.31.0"
+
+---
 apiVersion: ray.io/v1
 kind: RayJob
 metadata:
@@ -8,7 +48,7 @@ spec:
   # The alternative value is "HTTPMode", indicating that KubeRay will submit the Ray job by sending an HTTP request to the RayCluster.
   # submissionMode: "K8sJobMode"
   # entrypoint: python /home/ray/samples/sample_code.py
-  entrypoint: python /s3/code/train_images-ray/train_images-ray.py
+  entrypoint: python /home/ray/samples/sample_code.py
   # shutdownAfterJobFinishes specifies whether the RayCluster should be deleted after the RayJob finishes. Default is false.
   # shutdownAfterJobFinishes: false
 
@@ -82,10 +122,10 @@ spec:
                   command: ["/bin/sh","-c","ray stop"]
             resources:
               limits:                                    ## LIMITS: Set resource limits for your head node
-                cpu: 4
+                cpu: 1
                 memory: 8Gi
               requests:                                    ## REQUESTS: Set resource requests for your head node
-                cpu: 4
+                cpu: 1
                 memory: 8Gi
             ports:
             - containerPort: 6379
@@ -95,8 +135,8 @@ spec:
             - containerPort: 10001
               name: client
             volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head node
-            - name: persistent-storage
-              mountPath: /s3
+#            - name: persistent-storage
+#              mountPath: /s3
             - name: ray-logs
               mountPath: /tmp/ray
             - name: code-sample
@@ -104,9 +144,9 @@ spec:
           volumes:
             - name: ray-logs
               emptyDir: {}
-            - name: persistent-storage
-              persistentVolumeClaim:
-                claimName: s3-claim
+#            - name: persistent-storage
+#              persistentVolumeClaim:
+#                claimName: s3-claim
             - name: code-sample
               configMap: 
                 # Provide the name of hte ConfigMap you want to mount
@@ -117,7 +157,7 @@ spec:
                     path: sample_code.py
     workerGroupSpecs:
     # the pod replicas in this group typed worker
-    - replicas: 8                                    ## REPLICAS: How many worker pods you want - one per node
+    - replicas: 2                                    ## REPLICAS: How many worker pods you want - one per node
       minReplicas: 1
       maxReplicas: 10
       # logical group name, for this called small-group, also can be functional
@@ -144,12 +184,12 @@ spec:
                 memory: 24Gi
                 nvidia.com/gpu: 1
               requests:                                    ## REQUESTS: Set resource requests for your worker nodes
-                cpu: 4
+                cpu: 1
                 memory: 24Gi
                 nvidia.com/gpu: 1
             volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker nodes
-            - name: persistent-storage
-              mountPath: /s3
+#            - name: persistent-storage
+#              mountPath: /s3
             - name: ray-logs
               mountPath: /tmp/ray
           # Please add the following taints to the GPU node.
@@ -159,9 +199,9 @@ spec:
               value: "worker"
               effect: "NoSchedule"
           volumes:
-          - name: persistent-storage
-            persistentVolumeClaim:
-              claimName: s3-claim
+#          - name: persistent-storage
+#            persistentVolumeClaim:
+#              claimName: s3-claim
           - name: ray-logs
             emptyDir: {}
     # SubmitterPodTemplate is the template for the pod that will run the `ray job submit` command against the RayCluster.
@@ -178,65 +218,26 @@ spec:
 
   
 ## Need a PodMonitor pod to monitor metrics for prometheus/grafana to use
----
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
-metadata:
-  name: ray-workers-monitor
-  namespace: prometheus-system
-  labels:
-    release: prometheus
-    ray.io/cluster: rayml # $RAY_CLUSTER_NAME: "kubectl get rayclusters.ray.io"
-spec:
-  jobLabel: ray-workers
-  namespaceSelector:
-    matchNames:
-      - default
-  selector:
-    matchLabels:
-      ray.io/node-type: worker
-  podMetricsEndpoints:
-  - port: metrics
+#---
+#apiVersion: monitoring.coreos.com/v1
+#kind: PodMonitor
+#metadata:
+#  name: ray-workers-monitor
+#  namespace: prometheus-system
+#  labels:
+#    release: prometheus
+#    ray.io/cluster: rayml # $RAY_CLUSTER_NAME: "kubectl get rayclusters.ray.io"
+#spec:
+#  jobLabel: ray-workers
+#  namespaceSelector:
+#    matchNames:
+#      - default
+#  selector:
+#    matchLabels:
+#      ray.io/node-type: worker
+#  podMetricsEndpoints:
+#  - port: metrics
 
-
-######################Ray code sample#################################
-# this sample is from https://docs.ray.io/en/latest/cluster/job-submission.html#quick-start-example
-# it is mounted into the container and executed to show the Ray job at work
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ray-job-code-sample
-data:
-  sample_code.py: |
-    import ray
-    import os
-    import requests
-
-    ray.init()
-
-    @ray.remote
-    class Counter:
-        def __init__(self):
-            # Used to verify runtimeEnv
-            self.name = os.getenv("counter_name")
-            assert self.name == "test_counter"
-            self.counter = 0
-
-        def inc(self):
-            self.counter += 1
-
-        def get_counter(self):
-            return "{} got {}".format(self.name, self.counter)
-
-    counter = Counter.remote()
-
-    for _ in range(5):
-        ray.get(counter.inc.remote())
-        print(ray.get(counter.get_counter.remote()))
-
-    # Verify that the correct runtime env was used for the job.
-    assert requests.__version__ == "2.31.0"
 
 
 
