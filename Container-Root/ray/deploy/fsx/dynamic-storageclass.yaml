@@ -1,0 +1,38 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: fsx-sc
+provisioner: fsx.csi.aws.com
+parameters:
+  subnetId: $SUBNET_ID
+  securityGroupIds: $SECURITY_GROUP
+  deploymentType: PERSISTENT_2
+  automaticBackupRetentionDays: "0"
+  copyTagsToBackups: "true"
+  perUnitStorageThroughput: "250"
+  dataCompressionType: "LZ4"
+  fileSystemTypeVersion: "2.12"
+mountOptions:
+  - flock
+
+
+
+# Parameter Explaination
+
+# subnetId - The subnet ID that the FSx for Lustre filesystem should be created inside. Using the $SUBNET_ID environment variable, we are referencing the same private subnet that was used for EKS or EKS HyperPod cluster creation.
+
+# securityGroupIds - A list of security group IDs that should be attached to the filesystem. Using the $SECURITY_GROUP environment variable, we are referencing the same security group that was use for EKS or EKS HyperPod cluster creation.
+
+# deploymentType: PERSISTENT_2 is the latest generation of Persistent deployment type, and is best-suited for use cases that require longer-term storage, and have latency-sensitive workloads that require the highest levels of IOPS and throughput. For more information see Deployment options for FSx for Lustre file systems .
+
+# automaticBackupRetentionDays: The number of days to retain automatic backups. Setting this value to 0 disables the creation of automatic backups. If you set this parameter to a non-zero value, you can also specify the preferred time to take daily backups using the dailyAutomaticBackupStartTime parameter.
+
+# copyTagsToBackups: If this value is true, all tags for the file system are copied to all automatic and user-initiated backups.
+
+# perUnitStorageThroughput: For PERSISTENT_2 deployments, you can specify the storage throughput in MBps per TiB of storage capacity.
+
+# dataCompressionType: FSx for Lustre supports data compression via the LZ4 algorithm, which is optimized to deliver high levels of compression without adversely impacting file system performance. For more information see Lustre data compression .
+
+# fileSystemTypeVersion: This sets the Lustre version for the FSx for Lustre file system that will be created.
+
+# mountOptions: A list of mount options for the file system. The flock option mounts your file system with file lock enabled.

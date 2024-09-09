@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fsx-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: fsx-sc
+  resources:
+    requests:
+      storage: 1200Gi
+
+
+# This persistent volume claim will kick off the dynamic provisioning of an FSx for Lustre file system based on the specifications provided in the storage class.
