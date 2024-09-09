@@ -2,7 +2,7 @@ apiVersion: ray.io/v1alpha1
 kind: RayCluster
 metadata:
   name: rayml
-  namespace: default
+  namespace: kuberay
   labels:
     controller-tools.k8s.io: "1.0"
 spec:
@@ -16,16 +16,16 @@ spec:
     #pod template
     template:
       spec:
-        #nodeSelector:
-        #  node.kubernetes.io/instance-type: "ml.m5.2xlarge"
+        nodeSelector:
+         node.kubernetes.io/instance-type: "ml.m5.2xlarge"
         securityContext:
           runAsUser: 0
           runAsGroup: 0
           fsGroup: 0
         containers:
         - name: ray-head
-          image: rayproject/ray-ml:latest     ## IMAGE: Here you may choose which image your head node will run
-          env:                                ## ENV: Here is where you can send stuff to the head node
+          image: rayproject/ray-ml:latest     ## IMAGE: Here you may choose which image your head pod will run
+          env:                                ## ENV: Here is where you can send stuff to the head pod
             - name: RAY_GRAFANA_IFRAME_HOST   ## PROMETHEUS AND GRAFANA
               value: http://localhost:3000
             - name: RAY_GRAFANA_HOST
@@ -52,10 +52,10 @@ spec:
               exec:
                 command: ["/bin/sh","-c","ray stop"]
           resources:
-            limits:                                    ## LIMITS: Set resource limits for your head node
+            limits:                                    ## LIMITS: Set resource limits for your head pod
               cpu: 1
               memory: 8Gi
-            requests:                                    ## REQUESTS: Set resource requests for your head node
+            requests:                                    ## REQUESTS: Set resource requests for your head pod
               cpu: 1
               memory: 8Gi
           ports:
@@ -67,20 +67,25 @@ spec:
             name: client
           - containerPort: 8000
             name: serve
-          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head node
-#          - name: s3-storage
-#            mountPath: /s3
+          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head pod
+          - name: s3-storage
+            mountPath: /s3
+          - name: fsx-storage
+            mountPath: /fsx
           - name: ray-logs
             mountPath: /tmp/ray
         volumes:
           - name: ray-logs
             emptyDir: {}
-#          - name: s3-storage
-#           persistentVolumeClaim:
-#             claimName: s3-claim
+          - name: s3-storage
+            persistentVolumeClaim:
+              claimName: s3-claim
+          - name: fsx-storage
+            persistentVolumeClaim:
+              claimName: fsx-claim
   workerGroupSpecs:
   # the pod replicas in this group typed worker
-  - replicas: 2                                    ## REPLICAS: How many worker pods you want - one per node
+  - replicas: 4                                    ## REPLICAS: How many worker pods you want 
     minReplicas: 1
     maxReplicas: 10
     # logical group name, for this called small-group, also can be functional
@@ -90,6 +95,8 @@ spec:
     #pod template
     template:
       spec:
+        nodeSelector:
+         node.kubernetes.io/instance-type: "ml.g5.8xlarge"
         securityContext:
           runAsUser: 0
           runAsGroup: 0
@@ -102,32 +109,39 @@ spec:
               exec:
                 command: ["/bin/sh","-c","ray stop"]
           resources:
-            limits:                                    ## LIMITS: Set resource limits for your worker nodes
+            limits:                                    ## LIMITS: Set resource limits for your worker pods
               cpu: 4
               memory: 24Gi
               nvidia.com/gpu: 1
-            requests:                                    ## REQUESTS: Set resource requests for your worker nodes
-              cpu: 1
+            requests:                                    ## REQUESTS: Set resource requests for your worker pods
+              cpu: 4
               memory: 24Gi
               nvidia.com/gpu: 1
-          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker nodes
-#         - name: s3-storage
-#            mountPath: /s3
+          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker pods
+          - name: s3-storage
+            mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
+          - name: fsx-storage
+            mountPath: /fsx
         # Please add the following taints to the GPU node.
-        tolerations:                                       ## TOLERATIONS: These would be the taints set on your node groups
-          - key: "ray.io/node-type"                        ## in this case, these taints are set on my worker node group
-            operator: "Equal"                              ## if no taints, leave blank or delete "tolerations"
-            value: "worker"
-            effect: "NoSchedule"
+        # tolerations:                                       ## TOLERATIONS: These would be the taints set on your node groups
+        #   - key: "ray.io/node-type"                        ## in this case, these taints are set on my worker node group
+        #     operator: "Equal"                              ## if no taints, leave blank or delete "tolerations"
+        #     value: "worker"
+        #     effect: "NoSchedule"
         volumes:
-#        - name: s3-storage
-#          persistentVolumeClaim:
-#            claimName: s3-claim
+        - name: s3-storage
+          persistentVolumeClaim:
+            claimName: s3-claim
+        - name: fsx-storage
+          persistentVolumeClaim:
+            claimName: fsx-claim
         - name: ray-logs
           emptyDir: {}
 ---
+# UNCOMMENT BELOW IF YOU HAVE DEPLOYED PROMETHEUS
+
 #apiVersion: monitoring.coreos.com/v1
 #kind: PodMonitor
 #metadata:
@@ -146,5 +160,4 @@ spec:
 #      ray.io/node-type: worker
 #  podMetricsEndpoints:
 #  - port: metrics
-
 

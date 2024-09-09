@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 import ray.train.torch
+from ray.train import CheckpointConfig
 import time
 import os
 import tempfile
@@ -122,11 +123,11 @@ if __name__ == "__main__":
     # For GPU Training, set `use_gpu` to True.
     use_gpu = True
 
-    run_config = RunConfig(storage_path="s3://eks-ray-bucket/run_configs", name="run_test2")
+    run_config = RunConfig(storage_path="/fsx/dt-pytorch/run_configs", name="run_test1")
 
     trainer = TorchTrainer(
         train_func_distributed,
-        scaling_config=ScalingConfig(num_workers=8,use_gpu=use_gpu, resources_per_worker={"GPU": 1}),
+        scaling_config=ScalingConfig(num_workers=2,use_gpu=use_gpu, resources_per_worker={"GPU": 1}),
         run_config=run_config
     )
     # trainer.set_placement_strategy("SPREAD")
