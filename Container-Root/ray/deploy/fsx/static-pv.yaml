@@ -14,6 +14,6 @@ spec:
     driver: fsx.csi.aws.com
     volumeHandle: fs-04c243dd3dcd7a732  # Replace with your FSx file system ID
     volumeAttributes: 
-      dnsname: fs-04c243dd3dcd7a732.fsx.us-east-2.amazonaws.com      # Replace with your FSx file system DNS name
-      mountname: rikurbev   # Replace with your FSx file system DNS name
+      dnsname: fs-xxxx.fsx.us-east-2.amazonaws.com      # Replace with your FSx file system DNS name
+      mountname: xxxx   # Replace with your FSx file system DNS name
 
