@@ -70,8 +70,8 @@ spec:
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head pod
           - name: s3-storage
             mountPath: /s3
-          - name: fsx-storage
-            mountPath: /fsx
+          # - name: fsx-storage
+          #   mountPath: /fsx
           - name: ray-logs
             mountPath: /tmp/ray
         volumes:
@@ -80,9 +80,9 @@ spec:
           - name: s3-storage
             persistentVolumeClaim:
               claimName: s3-claim
-          - name: fsx-storage
-            persistentVolumeClaim:
-              claimName: fsx-claim
+          # - name: fsx-storage
+          #   persistentVolumeClaim:
+          #     claimName: fsx-claim
   workerGroupSpecs:
   # the pod replicas in this group typed worker
   - replicas: 4                                    ## REPLICAS: How many worker pods you want 
@@ -122,8 +122,8 @@ spec:
             mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
-          - name: fsx-storage
-            mountPath: /fsx
+          # - name: fsx-storage
+          #   mountPath: /fsx
         # Please add the following taints to the GPU node.
         # tolerations:                                       ## TOLERATIONS: These would be the taints set on your node groups
         #   - key: "ray.io/node-type"                        ## in this case, these taints are set on my worker node group
@@ -134,9 +134,9 @@ spec:
         - name: s3-storage
           persistentVolumeClaim:
             claimName: s3-claim
-        - name: fsx-storage
-          persistentVolumeClaim:
-            claimName: fsx-claim
+        # - name: fsx-storage
+        #   persistentVolumeClaim:
+        #     claimName: fsx-claim
         - name: ray-logs
           emptyDir: {}
 ---

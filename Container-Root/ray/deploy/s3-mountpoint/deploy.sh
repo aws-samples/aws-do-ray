@@ -1,9 +1,9 @@
 #!/bin/bash
-source ../../../../.env
+source /aws-do-ray/.env
 
 # Create an IAM OIDC identity provider for your cluster with the following command:
 
-eksctl utils associate-iam-oidc-provider --cluster $AWS_EKS_CLUSTER --approve
+eksctl utils associate-iam-oidc-provider --cluster $AWS_EKS_CLUSTER --region $AWS_REGION --approve
 
 # Create an IAM policy
 
@@ -52,7 +52,7 @@ POLICY_ARN=$(aws iam list-policies --query 'Policies[?PolicyName==`S3MountpointA
 eksctl create iamserviceaccount \
     --name s3-csi-driver-sa \
     --namespace kube-system \
-    --cluster $EKS_CLUSTER_NAME \
+    --cluster $AWS_EKS_CLUSTER \
     --attach-policy-arn $POLICY_ARN \
     --approve \
     --role-name $ROLE_NAME \
@@ -63,4 +63,4 @@ eksctl create iamserviceaccount \
 
 ROLE_ARN=$(aws iam get-role --role-name $ROLE_NAME  --query 'Role.Arn' --output text)
 
-eksctl create addon --name aws-mountpoint-s3-csi-driver --cluster $EKS_CLUSTER_NAME --service-account-role-arn $ROLE_ARN --force
+eksctl create addon --name aws-mountpoint-s3-csi-driver --cluster $AWS_EKS_CLUSTER --region $AWS_REGION --service-account-role-arn $ROLE_ARN --force

@@ -26,7 +26,19 @@ The deployment process is described on Fig. 2 below:
 
 
 ## Configure
-All configuration settings of the `aws-do-ray` project are centralized in its [`.env`](.env)) file. To review or change any of the settings, simply execute [`./config.sh`](./config.sh)). The AWS_EKS_CLUSTER setting must match the name of your existing EKS Cluster, and AWS_DEFAULT_REGION should match the AWS Region where the cluster is deployed.
+All configuration settings of the `aws-do-ray` project are centralized in its [`.env`](.env)) file. To review or change any of the settings, simply execute [`./config.sh`](./config.sh)).
+MANDATORY: Please fill out:
+* The AWS_EKS_CLUSTER setting must match the name of your existing EKS Cluster. 
+* AWS_DEFAULT_REGION should match the AWS Region where the cluster is deployed.
+For S3 Mountpoint:
+* S3_BUCKET_NAME should match your preconfigured S3 bucket if you are using S3 as a shared file system.
+For FSx for Lustre Shared File System (static and dynamic)
+* SUBNET_ID should match the subnet id of where your FSx for Lustre is configured OR where your EKS/Hyperpod nodes are if you have not set up FSx for Lustre yet. 
+* SECURITYGROUP_ID should match the security group id that allows traffic to your EKS Cluster (in your network interface if you have a pre-existing FSx cluster)
+If you plan integrate your pre-existing FSx (static)
+* FILESYSTEM_ID should match your FSx file system ID
+* FSX_DNS_NAME should match your FSx file system DNS name
+* FSX_MOUNT_NAME should match your FSx file system mount name
 
 To configure credentials, run aws configure. Credentials you configure on the host will be mounted into the `aws-do-eks` container according to the `VOL_MAP` setting in [`.env`](.env).
 
@@ -238,6 +250,9 @@ The project home folder offers a number of additional scripts for management of 
 
 * EKS API Serve Unauthorized Error (trouble accessing ray cluster from another EC2 instance)
     * [`Create access entry in EKS`](https://repost.aws/knowledge-center/eks-api-server-unauthorized-error)
+
+* [`An error occurred (InvalidClientTokenId) when calling the GetCallerIdentity operation: The security token included in the request is invalid`]
+    * You may need to run [`unset AWS_PROFILE`] to rely on the AWS credentials provided through the environment variables rather than the default profile in ~/.aws/credentials or ~/.aws/config. 
 
 
 ## Security
