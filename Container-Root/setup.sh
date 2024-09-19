@@ -39,6 +39,26 @@ python -m pip install torchx[kubernetes]
 # Install kustomize
 ./ray/ops/setup/install-kustomize.sh
 
+# Install kubectx
+./ray/ops/setup/install-kubectx.sh
+
+# Install kubeps1 and aliases
+./ray/ops/setup/install-kubeps1.sh
+./ray/ops/setup/install-bashrc.sh
+
+# Install kubetail
+./ray/ops/setup/install-kubetail.sh
+
+# Install kubeshell
+./ray/ops/setup/install-kubeshell.sh
+
+# Install k9s
+./ray/ops/setup/install-k9s.sh
+
+# Install stern using krew
+./ray/ops/setup/install-krew.sh
+./ray/ops/setup/install-stern.sh
+
 # Install sbom utils
 ./ray/ops/setup/install-sbom-utils.sh
 
@@ -65,9 +85,4 @@ output = json
 EOL
   fi
 fi
-
-# Configure .bashrc
-echo "export PATH=\$PATH:/aws-do-ray/Container-Root/ray/ops" >> /root/.bashrc
-echo "alias re=ray-expose.sh" >> /root/.bashrc
-echo "alias rh=ray-hide.sh" >> /root/.bashrc
 
