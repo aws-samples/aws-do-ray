@@ -15,4 +15,4 @@ spec:
     driver: s3.csi.aws.com # required
     volumeHandle: s3-csi-driver-volume
     volumeAttributes:
-      bucketName: do-ray-bucket
+      bucketName: ${S3_BUCKET_NAME}

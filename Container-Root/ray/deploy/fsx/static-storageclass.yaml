@@ -4,6 +4,6 @@ metadata:
   name: fsx-sc
 provisioner: fsx.csi.aws.com
 parameters:
-  fileSystemId: fs-xxxx # Replace with your FSx file system ID
-  subnetId: subnet-xxxxx  # Replace with your subnet ID
-  securityGroupIds: sg-xxxxx  # Replace with your security group ID
+  fileSystemId: ${FILESYSTEM_ID} # Replace with your FSx file system ID
+  subnetId: ${SUBNET_ID}  # Replace with your subnet ID
+  securityGroupIds: ${SECURITYGROUP_ID}  # Replace with your security group ID

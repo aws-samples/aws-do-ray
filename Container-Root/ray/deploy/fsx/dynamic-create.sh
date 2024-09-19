@@ -2,7 +2,9 @@
 echo "In kuberay namespace..."
 
 echo "Applying dynamic-storageclass.yaml"
-kubectl apply -f dynamic-storageclass.yaml -n kuberay
+# kubectl apply -f dynamic-storageclass.yaml -n kuberay
+envsubst < dynamic-storageclass.yaml | kubectl apply -n kuberay  -f -
+
 
 echo "Applying dynamic-pvc.yaml"
 kubectl apply -f dynamic-pvc.yaml -n kuberay

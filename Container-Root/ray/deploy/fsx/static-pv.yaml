@@ -12,8 +12,8 @@ spec:
   storageClassName: fsx-sc
   csi:
     driver: fsx.csi.aws.com
-    volumeHandle: fs-04c243dd3dcd7a732  # Replace with your FSx file system ID
+    volumeHandle: ${FILESYSTEM_ID}  # Replace with your FSx file system ID
     volumeAttributes: 
-      dnsname: fs-xxxx.fsx.us-east-2.amazonaws.com      # Replace with your FSx file system DNS name
-      mountname: xxxx   # Replace with your FSx file system DNS name
+      dnsname: ${FSX_DNS_NAME}      # Replace with your FSx file system DNS name
+      mountname: ${FSX_MOUNT_NAME}   # Replace with your FSx file system mount name
 
