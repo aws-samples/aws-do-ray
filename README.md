@@ -202,7 +202,7 @@ Now, please run [`./dynamic-create.sh`](/Container-Root/ray/deploy/fsx/dynamic-c
 
 #### Static Provisioning
 
-If you would like to use static provisioning, ensure you have your volumeHandle: is set with your FSx file system ID, dnsname: is set with your FSx file system DNS name, and your mountname:  is set with your FSx file system mount name in [`static-pv.yaml](/Container-Root/ray/deploy/fsx/static-pv.yaml), and your fileSystemId: is set with your FSx file system ID, subnetId: is set with your subnet ID, and your securityGroupIds: is set with your security group ID within [`static-storageclass.yaml`](/Container-Root/ray/deploy/fsx/static-storageclass.yaml). 
+If you would like to use static provisioning, ensure you have your volumeHandle: is set with your FSx file system ID, dnsname: is set with your FSx file system DNS name, and your mountname:  is set with your FSx file system mount name in [`static-pv.yaml'](/Container-Root/ray/deploy/fsx/static-pv.yaml), and your fileSystemId: is set with your FSx file system ID, subnetId: is set with your subnet ID, and your securityGroupIds: is set with your security group ID within [`static-storageclass.yaml`](/Container-Root/ray/deploy/fsx/static-storageclass.yaml). 
 
 Now, please run [`./static-create.sh`](/Container-Root/ray/deploy/fsx/static-create.sh). This creates a PV and a PVC which you can then use to mount to your ray pods within "volumes" section in your raycluster template. 
 
