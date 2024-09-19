@@ -2,7 +2,7 @@ apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
   name: raycluster-autoscaler
-  namespace: default
+  namespace: kuberay
   labels:
     controller-tools.k8s.io: "1.0"
 spec:
@@ -46,150 +46,151 @@ spec:
     # See https://github.com/ray-project/kuberay/blob/master/docs/guidance/rayStartParams.md for the default settings of `rayStartParams` in KubeRay.
     # See https://docs.ray.io/en/latest/cluster/cli.html#ray-start for all available options in `rayStartParams`.
     rayStartParams:
-      # Setting "num-cpus: 0" to avoid any Ray actors or tasks being scheduled on the Ray head Pod.
-      num-cpus: "0"
       dashboard-host: '0.0.0.0'
-      # Use `resources` to optionally specify custom resource annotations for the Ray node.
-      # The value of `resources` is a string-integer mapping.
-      # Currently, `resources` must be provided in the specific format demonstrated below:
-      # resources: '"{\"Custom1\": 1, \"Custom2\": 5}"'
-    # Pod template
+    #pod template
     template:
       spec:
+        nodeSelector:
+         node.kubernetes.io/instance-type: "ml.m5.2xlarge"
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          fsGroup: 0
         containers:
-        # The Ray head container
         - name: ray-head
-          image: rayproject/ray:2.9.0
-          ports:
-          - containerPort: 6379
-            name: gcs
-          - containerPort: 8265
-            name: dashboard
-          - containerPort: 10001
-            name: client
+          image: rayproject/ray-ml:latest     ## IMAGE: Here you may choose which image your head pod will run
+          env:                                ## ENV: Here is where you can send stuff to the head pod
+            - name: RAY_GRAFANA_IFRAME_HOST   ## PROMETHEUS AND GRAFANA
+              value: http://localhost:3000
+            - name: RAY_GRAFANA_HOST
+              value: http://prometheus-grafana.prometheus-system.svc:80
+            - name: RAY_PROMETHEUS_HOST
+              value: http://prometheus-kube-prometheus-prometheus.prometheus-system.svc:9090
+            # - name: AWS_ACCESS_KEY_ID       ## after running ./deploy/kubectl-secrets/kubectl-secret-keys.sh
+            #   valueFrom:                    ## if you need your code to access other private S3 buckets
+            #     secretKeyRef:
+            #       name: aws-creds
+            #       key: AWS_ACCESS_KEY_ID
+            # - name: AWS_SECRET_ACCESS_KEY
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: aws-creds
+            #       key: AWS_SECRET_ACCESS_KEY
+            # - name: AWS_SESSION_TOKEN
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: aws-creds
+            #       key: AWS_SESSION_TOKEN
           lifecycle:
             preStop:
               exec:
                 command: ["/bin/sh","-c","ray stop"]
           resources:
-            limits:
-              cpu: 4
+            limits:                                    ## LIMITS: Set resource limits for your head pod
+              cpu: 1
               memory: 8Gi
-            requests:
-              cpu: 4
+            requests:                                    ## REQUESTS: Set resource requests for your head pod
+              cpu: 1
               memory: 8Gi
-          volumeMounts:
-            - mountPath: /home/ray/samples
-              name: ray-example-configmap
-            - mountPath: /data
-              name: s3-storage
-            - mountPath: /tmp/ray
-              name: ray-logs
+          ports:
+          - containerPort: 6379
+            name: gcs-server
+          - containerPort: 8265 # Ray dashboard
+            name: dashboard
+          - containerPort: 10001
+            name: client
+          - containerPort: 8000
+            name: serve
+          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head pod
+          - name: s3-storage
+            mountPath: /s3
+          - name: fsx-storage
+            mountPath: /fsx
+          - name: ray-logs
+            mountPath: /tmp/ray
         volumes:
-          - name: ray-example-configmap
-            configMap:
-              name: ray-example
-              defaultMode: 0777
-              items:
-                - key: detached_actor.py
-                  path: detached_actor.py
-                - key: terminate_detached_actor.py
-                  path: terminate_detached_actor.py
           - name: ray-logs
             emptyDir: {}
+          - name: s3-storage
+            persistentVolumeClaim:
+              claimName: s3-claim
+          - name: fsx-storage
+            persistentVolumeClaim:
+              claimName: fsx-claim
   workerGroupSpecs:
-  # the Pod replicas in this group typed worker
-  - replicas: 2
+  # the pod replicas in this group typed worker
+  - replicas: 4                                    ## REPLICAS: How many worker pods you want 
     minReplicas: 1
     maxReplicas: 10
     # logical group name, for this called small-group, also can be functional
     groupName: gpu-group
-    # If worker pods need to be added, Ray Autoscaler can increment the `replicas`.
-    # If worker pods need to be removed, Ray Autoscaler decrements the replicas, and populates the `workersToDelete` list.
-    # KubeRay operator will remove Pods from the list until the desired number of replicas is satisfied.
-    #scaleStrategy:
-    #  workersToDelete:
-    #  - raycluster-complete-worker-small-group-bdtwh
-    #  - raycluster-complete-worker-small-group-hv457
-    #  - raycluster-complete-worker-small-group-k8tj7
-    rayStartParams: 
+    rayStartParams:
       num-gpus: "1"
-    # Pod template
+    #pod template
     template:
       spec:
+        nodeSelector:
+         node.kubernetes.io/instance-type: "ml.g5.8xlarge"
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          fsGroup: 0
         containers:
         - name: ray-worker
-          image: rayproject/ray:2.9.0
+          image: rayproject/ray-ml:latest             ## IMAGE: Here you may choose which image your head node will run
           lifecycle:
             preStop:
               exec:
                 command: ["/bin/sh","-c","ray stop"]
           resources:
-            limits:
+            limits:                                    ## LIMITS: Set resource limits for your worker pods
               cpu: 4
               memory: 24Gi
               nvidia.com/gpu: 1
-            requests:
+            requests:                                    ## REQUESTS: Set resource requests for your worker pods
               cpu: 4
               memory: 24Gi
               nvidia.com/gpu: 1
-          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker nodes
+          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker pods
           - name: s3-storage
-            mountPath: /data
+            mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
+          - name: fsx-storage
+            mountPath: /fsx
         # Please add the following taints to the GPU node.
-        tolerations:                                       ## TOLERATIONS: These would be the taints set on your node groups
-          - key: "ray.io/node-type"                        ## in this case, these taints are set on my worker node group
-            operator: "Equal"                              ## if no taints, leave blank or delete "tolerations"
-            value: "worker"
-            effect: "NoSchedule"
+        # tolerations:                                       ## TOLERATIONS: These would be the taints set on your node groups
+        #   - key: "ray.io/node-type"                        ## in this case, these taints are set on my worker node group
+        #     operator: "Equal"                              ## if no taints, leave blank or delete "tolerations"
+        #     value: "worker"
+        #     effect: "NoSchedule"
         volumes:
         - name: s3-storage
           persistentVolumeClaim:
             claimName: s3-claim
+        - name: fsx-storage
+          persistentVolumeClaim:
+            claimName: fsx-claim
         - name: ray-logs
           emptyDir: {}
 ---
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
-metadata:
-  name: ray-workers-monitor
-  namespace: prometheus-system
-  labels:
-    release: prometheus
-    ray.io/cluster: rayml # $RAY_CLUSTER_NAME: "kubectl get rayclusters.ray.io"
-spec:
-  jobLabel: ray-workers
-  namespaceSelector:
-    matchNames:
-      - default
-  selector:
-    matchLabels:
-      ray.io/node-type: worker
-  podMetricsEndpoints:
-  - port: metrics
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ray-example
-data:
-  detached_actor.py: |
-    import ray
-    import sys
+# UNCOMMENT BELOW IF YOU HAVE DEPLOYED PROMETHEUS
 
-    @ray.remote(num_cpus=1)
-    class Actor:
-      pass
-
-    ray.init(namespace="default_namespace")
-    Actor.options(name=sys.argv[1], lifetime="detached").remote()
-
-  terminate_detached_actor.py: |
-    import ray
-    import sys
-
-    ray.init(namespace="default_namespace")
-    detached_actor = ray.get_actor(sys.argv[1])
-    ray.kill(detached_actor)
+#apiVersion: monitoring.coreos.com/v1
+#kind: PodMonitor
+#metadata:
+#  name: ray-workers-monitor
+#  namespace: prometheus-system
+#  labels:
+#    release: prometheus
+#    ray.io/cluster: rayml # $RAY_CLUSTER_NAME: "kubectl get rayclusters.ray.io"
+#spec:
+#  jobLabel: ray-workers
+#  namespaceSelector:
+#    matchNames:
+#      - default
+#  selector:
+#    matchLabels:
+#      ray.io/node-type: worker
+#  podMetricsEndpoints:
+#  - port: metrics

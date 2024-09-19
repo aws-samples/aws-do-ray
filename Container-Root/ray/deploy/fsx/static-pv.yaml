@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: fsx-pv
+spec:
+  capacity:
+    storage: 1200Gi  # Adjust based on your FSx volume size
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fsx-sc
+  csi:
+    driver: fsx.csi.aws.com
+    volumeHandle: ${FILESYSTEM_ID}  # Replace with your FSx file system ID
+    volumeAttributes: 
+      dnsname: ${FSX_DNS_NAME}      # Replace with your FSx file system DNS name
+      mountname: ${FSX_MOUNT_NAME}   # Replace with your FSx file system mount name
+
