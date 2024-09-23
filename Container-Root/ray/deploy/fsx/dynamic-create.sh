@@ -2,7 +2,9 @@
 
 set -e
 
-source /aws-do-ray/.env
+pushd /aws-do-ray
+source .env
+popd
 
 # FSX CONFIGURATION
 

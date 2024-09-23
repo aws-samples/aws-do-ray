@@ -23,13 +23,11 @@ if [ "$EKS_CLUSTER_NAME" == "" ]; then
 	echo "Could not determine EKS_CLUSTER_NAME" >&2
 	echo "" >&2
 else
+	echo "" >&2
+	echo "Looking for HyperPod cluster, associated with EKS cluster $EKS_CLUSTER_NAME ..." >&2
+	echo "" >&2
 	HP_CLUSTERS=$(aws sagemaker list-clusters --region $AWS_REGION --query 'ClusterSummaries[].ClusterName' --output text)
 	for HP_CLUSTER in $HP_CLUSTERS; do 
-		# TODO:
-		#Describe each hyperpod cluster and check the associated EKS cluster. 
-		#If you find a match, then echo the name of the identified hyperpod cluster
-		#Describe command (showing associated EKS cluster)
-		# aws sagemaker describe-cluster --cluster-name aws-do-hyperpod-eks-smhp --query Orchestrator.Eks.ClusterArn --output text
 		EKS_CLUSTER_ARN=$(aws sagemaker describe-cluster --cluster-name $HP_CLUSTER --region $AWS_REGION --query Orchestrator.Eks.ClusterArn --output text)
 		MAYBE_EKS_CLUSTER_NAME=$(echo $EKS_CLUSTER_ARN | awk -F'/' '{print $NF}')
 		# Check if the EKS cluster name matches the expected one
@@ -37,10 +35,10 @@ else
 			echo "Match found! Hyperpod cluster: $HP_CLUSTER is associated with EKS cluster: $EKS_CLUSTER_NAME" >&2
 			export AWS_EKS_HYPERPOD_CLUSTER=$HP_CLUSTER
 			echo $HP_CLUSTER
+			break
 		else
-			echo "No match for cluster: $HP_CLUSTER"
+			echo "Not a match. HyperPod cluster: $HP_CLUSTER is associated with EKS cluster: $MAYBE_EKS_CLUSTER_NAME" >&2"
 		fi
 	done
 fi
-
 

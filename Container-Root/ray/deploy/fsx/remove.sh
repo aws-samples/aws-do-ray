@@ -2,7 +2,9 @@
 
 # This script removes the FSx for Lustre integration from your EKS or EKS Hyperpod cluster.
 
-source /aws-do-ray/.env
+pushd /aws-do-ray
+source .env
+popd
 
 # 1. Remove the FSx for Lustre CSI driver using Helm
 echo "Uninstalling FSx for Lustre CSI driver..."
