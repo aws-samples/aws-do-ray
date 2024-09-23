@@ -198,6 +198,8 @@ Static Provisioning: In this method, you manually create the FSx file system bef
 
 #### Dynamic Provisioning
 
+This is done in [`setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh), but can also be done separately...
+
 If you would like to use dynamic provisioning, ensure you have your desired configuration in [`dynamic-storageclass.yaml`](/Container-Root/ray/deploy/fsx/dynamic-storageclass.yaml) as well as inputting your "subnetID" and your "securityGroupIds". 
 
 * subnetId - The subnet ID that the FSx for Lustre filesystem should be created inside. Using the $SUBNET_ID environment variable, we are referencing the same private subnet that was used for EKS or EKS HyperPod cluster creation.

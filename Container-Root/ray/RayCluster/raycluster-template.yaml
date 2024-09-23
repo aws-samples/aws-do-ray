@@ -85,7 +85,7 @@ spec:
               claimName: fsx-claim
   workerGroupSpecs:
   # the pod replicas in this group typed worker
-  - replicas: 4                                    ## REPLICAS: How many worker pods you want 
+  - replicas: 2                                    ## REPLICAS: How many worker pods you want 
     minReplicas: 1
     maxReplicas: 10
     # logical group name, for this called small-group, also can be functional
