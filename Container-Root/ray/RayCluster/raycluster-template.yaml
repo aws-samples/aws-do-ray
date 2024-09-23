@@ -68,21 +68,21 @@ spec:
           - containerPort: 8000
             name: serve
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head pod
-          - name: s3-storage
-            mountPath: /s3
-          # - name: fsx-storage
-          #   mountPath: /fsx
+          # - name: s3-storage
+          #   mountPath: /s3
+          - name: fsx-storage
+            mountPath: /fsx
           - name: ray-logs
             mountPath: /tmp/ray
         volumes:
           - name: ray-logs
             emptyDir: {}
-          - name: s3-storage
-            persistentVolumeClaim:
-              claimName: s3-claim
-          # - name: fsx-storage
+          # - name: s3-storage
           #   persistentVolumeClaim:
-          #     claimName: fsx-claim
+          #     claimName: s3-claim
+          - name: fsx-storage
+            persistentVolumeClaim:
+              claimName: fsx-claim
   workerGroupSpecs:
   # the pod replicas in this group typed worker
   - replicas: 4                                    ## REPLICAS: How many worker pods you want 
@@ -118,12 +118,12 @@ spec:
               memory: 24Gi
               nvidia.com/gpu: 1
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker pods
-          - name: s3-storage
-            mountPath: /s3
+          # - name: s3-storage
+          #   mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
-          # - name: fsx-storage
-          #   mountPath: /fsx
+          - name: fsx-storage
+            mountPath: /fsx
         # Please add the following taints to the GPU node.
         # tolerations:                                       ## TOLERATIONS: These would be the taints set on your node groups
         #   - key: "ray.io/node-type"                        ## in this case, these taints are set on my worker node group
@@ -131,12 +131,12 @@ spec:
         #     value: "worker"
         #     effect: "NoSchedule"
         volumes:
-        - name: s3-storage
-          persistentVolumeClaim:
-            claimName: s3-claim
-        # - name: fsx-storage
+        # - name: s3-storage
         #   persistentVolumeClaim:
-        #     claimName: fsx-claim
+        #     claimName: s3-claim
+        - name: fsx-storage
+          persistentVolumeClaim:
+            claimName: fsx-claim
         - name: ray-logs
           emptyDir: {}
 ---

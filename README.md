@@ -28,19 +28,14 @@ The deployment process is described on Fig. 2 below:
 ## Configure
 All configuration settings of the `aws-do-ray` project are centralized in its [`.env`](.env)) file. To review or change any of the settings, simply execute [`./config.sh`](./config.sh)).
 MANDATORY: Please fill out:
+* AWS_REGION should match the AWS Region where the cluster is deployed.
 * The AWS_EKS_CLUSTER setting must match the name of your existing EKS Cluster. 
-* AWS_DEFAULT_REGION should match the AWS Region where the cluster is deployed.
-For S3 Mountpoint:
-* S3_BUCKET_NAME should match your preconfigured S3 bucket if you are using S3 as a shared file system.
-For FSx for Lustre Shared File System (static and dynamic)
-* SUBNET_ID should match the subnet id of where your FSx for Lustre is configured OR where your EKS/Hyperpod nodes are if you have not set up FSx for Lustre yet. 
-* SECURITYGROUP_ID should match the security group id that allows traffic to your EKS Cluster (in your network interface if you have a pre-existing FSx cluster)
-If you plan integrate your pre-existing FSx (static)
-* FILESYSTEM_ID should match your FSx file system ID
-* FSX_DNS_NAME should match your FSx file system DNS name
-* FSX_MOUNT_NAME should match your FSx file system mount name
+* AWS_EKS_HYPERPOD_CLUSTER setting must match the name of your existing EKS Hyperpod Cluster
+* CLUSTER_TYPE setting must either be "eks" or "hyperpod" depending on what type of cluster you are using... default is eks.
 
-To configure credentials, run aws configure. Credentials you configure on the host will be mounted into the `aws-do-eks` container according to the `VOL_MAP` setting in [`.env`](.env).
+
+
+To configure credentials, run aws configure. Credentials you configure on the host will be mounted into the `aws-do-eks` container according to the `VOL_MAP` setting in [`.env`](.env). When in the container, you can check credentials in ~/.aws/credentials. 
 
 ## Build
 This project follows the [Depend on Docker](https://github.com/iankoulski/depend-on-docker) template to build a container including all needed tools and utilities for creation and management of Ray. Please execute the [`./build.sh`](./build.sh) script to create the `aws-do-ray` container image and tag it using the registry and version tag specified in the project configuration. If desired, the image name or registry address can be modified in the project configuration file [`.env`](.env).
@@ -55,7 +50,7 @@ To check the status of the container, execute [`./status.sh`](./status.sh). If t
 After the container is started, use the [`./exec.sh`](./exec.sh) script to open a bash shell in the container. All necessary tools to allow creation, management, and operation of Ray are available in this shell. 
 
 ## Deploy KubeRay Operator
-Once you have opened the `aws-do-ray` shell you will be dropped in the [`/ray`](/Container-Root/ray/) directory where you will find the [`./deploy-kuberay-operator.sh`](/Container-Root/ray/deploy-kuberay-operator.sh) script. This deployment creates a kuberay namespace and a kuberay-operator pod in your EKS cluster within your head node in the kuberay namespace. Upon successful deployment, it will be in Running state. To check the state of the pod in the cluster, use command: `kubectl get pods -n kuberay`. 
+Once you have opened the `aws-do-ray` shell you will be dropped in the [`/ray`](/Container-Root/ray/) directory where you will find the [`./setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script. This deployment creates a kuberay namespace and a kuberay-operator pod in your EKS cluster within your head node in the kuberay namespace. It will then dynamically provision an FSx for Lustre cluster for a shared file system for your ray cluster. Upon successful deployment, you will have the kuberay operator pod in your head EKS node, and a bound PVC. To check the state of the pod in the cluster, use command: `kubectl get pods -n kuberay`, and to check the state of your PVC, please run `kubectl get pvc -n kuberay`.
 
 ### The KubeRay Operator
 The KubeRay Operator: gets deployed on the user’s EKS cluster. This allows for 3 different types of Ray deployments: RayCluster, RayService, and RayJobs.
@@ -73,9 +68,9 @@ The KubeRay Operator: gets deployed on the user’s EKS cluster. This allows for
 
 ## Distributed Training Jobs
 Please read before submitting your distributed training jobs.
-1. From [Ray Documentation](https://docs.ray.io/en/latest/train/getting-started-pytorch.html), specifying a shared storage location (such as cloud storage or NFS) is optional for single-node clusters, but it is required for multi-node clusters. Using a local path will raise an error during checkpointing for multi-node clusters. Please configure shared storage in your cluster template before submitting distributed/multi-node cluster jobs. To do this, please refer to [Deploy Scripts](#deploy-scripts). Once this is done, reference storage_path within RunConfig as the path in your shared storage where you'd like to place your checkpoints, logs, and model artifacts.
+1. From [Ray Documentation](https://docs.ray.io/en/latest/train/getting-started-pytorch.html), specifying a shared storage location (such as cloud storage or NFS) is optional for single-node clusters, but it is required for multi-node clusters. Using a local path will raise an error during checkpointing for multi-node clusters. This is why the [`./setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script deploys an FSx for Lustre cluster. For other deployments, like S3 Mount point, please refer to the [`Deploy Scripts`](#deploy-scripts) section of the ReadMe. Once this is done, reference storage_path within RunConfig within the python training scripts as the path in your shared storage where you'd like to place your checkpoints, logs, and model artifacts. By default, it currently references your FSx for Lustre mount. 
 
-2. Within the python code provided, you can also set num_workers to an int (the number of ray workers you are using) and use_gpu to a boolean (True or False, default is set to True). 
+2. Within the python code provided, you can also set num_workers to an int (the number of ray workers you are using) and use_gpu to a boolean (True or False, default is set to True). Default is num_workers=2 and use_gpu=True. 
 
 
 
@@ -106,7 +101,7 @@ For everything you need to know about the details of a RayCluster configuration,
 * containers: env: name: (AWS KEYS)
     * After deploying your kubectl secrets after running [`./deploy/kubectl-secrets/kubectl-secret-keys.sh`](./Container-Root/ray/deploy/kubectl-secrets/kubectl-secret-keys.sh) your Ray pods will now have your IAM permissions to access your or other buckets/filesystems/etc. If this is needed, please comment this section out in the template. 
 * volumeMounts and volumes under headGroupSpec and workerGroupSpecs
-    * This is where you can mount volumes like S3, EFS, FSx for Lustre on to your pods. Please create a PV and a PVC before hand and fill in persistentVolumeClaim: claimName: (PVC name). To make a pv and pvc, please see [`Deploy Scripts`](#deploy-scripts) section. 
+    * This is where you can mount volumes like S3, EFS, FSx for Lustre on to your pods.
     * **This is needed for multi node distributed training jobs!!**
 
 ### Ray Dashboard
