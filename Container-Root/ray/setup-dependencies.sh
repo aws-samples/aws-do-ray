@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Apply kuberay Manifests
 NS_COUNT=$(kubectl get namespace kuberay | grep kuberay | wc -l)
 if [ "$NS_COUNT" == "1" ]; then

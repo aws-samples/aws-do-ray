@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 source /aws-do-ray/.env
 
 # FSX CONFIGURATION

@@ -7,7 +7,7 @@
 # https://github.com/kubernetes-sigs/aws-fsx-csi-driver
 # This is sourced from the Amazon EKS Support in Amazon SageMaker workshop studio
 
-source ../../../../.env
+set -e
 
 # Create an IAM OIDC identity provider for your cluster with the following command:
 
