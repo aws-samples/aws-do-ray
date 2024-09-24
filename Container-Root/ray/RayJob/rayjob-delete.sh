@@ -4,7 +4,7 @@
 # Check if a model name is provided as an argument
 if [ -z "$1" ]; then
     echo "Error: No model name provided."
-    echo "Usage: ./rayjob-delete.sh <Job>"
+    echo "Usage: ./rayjob-delete.sh <model_name>"
     exit 1
 fi
 
