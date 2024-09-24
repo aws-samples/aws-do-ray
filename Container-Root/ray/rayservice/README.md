@@ -26,7 +26,7 @@ These Ray Serve examples are reused from AWS-Samples [`awsome-inference`](https:
 
 ### 1. Deploy RayService cluster. 
 ```bash
-./create-serve.sh MobileNet
+./rayservice-create.sh MobileNet
 ```
 Run this command to deploy your RayService cluster.
 
@@ -107,7 +107,7 @@ kubectl port-forward svc/stable-diffusion-raycluster-XXXXX-head-svc -n kuberay 8
 
 
 ### 3. Forward the port for Ray Serve
-To try out the MobileNet query, please port-forward the service
+To try out the Stable Diffusion query, please port-forward the service
 ```bash
 kubectl port-forward svc/stable-diffusion-serve-svc -n kuberay 8000 
 ```

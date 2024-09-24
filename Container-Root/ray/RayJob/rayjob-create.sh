@@ -1,37 +1,47 @@
 #!/bin/bash
 
 
-# Check if a model name is provided as an argument
+# Check if a job name is provided as an argument
 if [ -z "$1" ]; then
-    echo "Error: No model name provided."
-    echo "Usage: ./rayjob-create.sh <model_name>"
+    echo ""
+    echo "Error: No job name provided."
+    echo "Usage: ./rayjob-create.sh <job_name>"
+    echo "Available jobs: test-counter"
+    echo ""
     exit 1
 fi
 
-# Set the model name from the argument
-MODEL_NAME=$1
+# Set the job name from the argument
+JOB=$1
 
-# Convert the model name to lowercase for consistency
-MODEL_NAME_LOWER=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
+# Convert the job name to lowercase for consistency
+JOB=$(echo "$JOB" | tr '[:upper:]' '[:lower:]')
 
-# Apply the appropriate YAML file based on the model name
-if [ "$MODEL_NAME" == "batch-inference" ]; then
-    kubectl apply -f batch-inference/ray-job.batch-inference.yaml -n kuberay
-elif [ "$MODEL_NAME" == "test-counter" ]; then
-    kubectl apply -f test-counter/ray-job.test-counter.yaml -n kuberay
-else
-    echo "Error: Invalid model name. Available options are: test-counter or batch-inference."
-    exit 2
+# # Apply the appropriate YAML file based on the job name
+# if [ "$JOB" == "test-counter" ]; then
+#     kubectl apply -f ${JOB}/ray-job.${JOB}.yaml -n kuberay
+# else
+#     echo "Error: Invalid job name. Available options are: test-counter."
+#     exit 2
+# fi
+
+kubectl apply -f ${JOB}/ray-job.${JOB}.yaml -n kuberay
+
+# Check if the kubectl apply command succeeded
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to apply the job configuration for ${JOB}."
+    exit 1
 fi
 
 
 # Confirm successful deployment
 if [ $? -eq 0 ]; then
-    echo "RayJob deployed successfully for model: $MODEL_NAME."
-    echo "Run 'kubectl get rayjob --namespace kuberay' to view the job status."
-    echo "Run 'kubectl get pods --namespace kuberay' to view job pods."
+    echo "RayJob deployed successfully for job: $JOB."
+    echo "Run './rayjob-status.sh' to view the job status."
+    echo "Run './rayjob-pods.sh' to view job pods."
+    echo "Run './rayjob-logs.sh $JOB' to view job pods."
 else
-    echo "Error deploying RayJob for model: $MODEL_NAME"
+    echo "Error deploying RayJob for job: $JOB"
     exit 3
 fi
 

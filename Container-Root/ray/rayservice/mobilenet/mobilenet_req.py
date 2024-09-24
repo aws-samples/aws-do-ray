@@ -1,8 +1,7 @@
 import requests
 
 # TODO: Change this to your image path
-image_path = "lamborghini.png"
-image_path = "dog.png"
+image_path = "/aws-do-ray/Container-Root/ray/rayservice/mobilenet/lamborghini.png"
 
 
 url = "http://127.0.0.1:8000"

@@ -1,7 +1,7 @@
 apiVersion: ray.io/v1
 kind: RayService
 metadata:
-  name: rayservice-mobilenet
+  name: mobilenet
 spec:
   serveConfigV2: |
     applications:
@@ -12,7 +12,7 @@ spec:
           pip: ["python-multipart==0.0.6"]
         deployments:
           - name: ImageClassifier
-            num_replicas: 2
+            num_replicas: 1
             ray_actor_options:
               num_cpus: 1
   rayClusterConfig:

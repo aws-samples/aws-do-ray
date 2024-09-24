@@ -3,32 +3,31 @@
 
 # Check if a model name is provided as an argument
 if [ -z "$1" ]; then
-    echo "Error: No model name provided."
-    echo "Usage: ./rayjob-delete.sh <model_name>"
+    echo ""
+    echo "Error: No job name provided."
+    echo "Usage: ./rayjob-delete.sh <job_name>"
+    echo "List of jobs to choose from:"
+    echo ""
+    ./rayjob-status.sh
+    echo -e "\n"
     exit 1
 fi
 
 # Set the model name from the argument
-MODEL_NAME=$1
+JOB=$1
 
 # Convert the model name to lowercase for consistency
-MODEL_NAME_LOWER=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
+JOB=$(echo "$JOB" | tr '[:upper:]' '[:lower:]')
 
-# Apply the appropriate YAML file based on the model name
-if [ "$MODEL_NAME" == "test-counter" ]; then
-    kubectl delete -f test-counter/ray-job.test-counter.yaml -n kuberay
-else
-    echo "Error: Invalid model name. Available options are: test-counter."
-    exit 2
-fi
+kubectl delete rayjob $JOB -n kuberay
 
 
 # Confirm successful deployment
 if [ $? -eq 0 ]; then
-    echo "RayJob deleted successfully for model: $MODEL_NAME."
-    echo "Run 'kubectl get rayjob --namespace kuberay' to view the job status."
+    echo "RayJob deleted successfully for job: $JOB."
+    echo "Run './rayjob-status.sh' to confirm deleted status."
 else
-    echo "Error deleting RayJob for model: $MODEL_NAME"
+    echo "Error deleting RayJob for job: $JOB"
     exit 3
 fi
 
