@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ray-expose.sh
+
 # Check if the submission_id is passed as an argument
 if [ -z "$1" ]; then
     echo "Error: No submission_id provided."

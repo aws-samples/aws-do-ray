@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ray-expose.sh
+
 # Function to submit the job through the Ray SDK
 submit_via_sdk() {
     echo "Submitting job '$1' through the Ray SDK..."

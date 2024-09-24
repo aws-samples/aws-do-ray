@@ -1,4 +1,7 @@
 #!/bin/bash
+
+ray-expose.sh
+
 echo -e "JOBS:-------- \n"
 
 ray job list --address http://localhost:8265 

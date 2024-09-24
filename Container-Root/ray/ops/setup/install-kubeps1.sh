@@ -53,6 +53,7 @@ alias nu='neurontop.sh'
 alias neuron-util='neurontop.sh'
 alias re='ray-expose.sh'
 alias rh='ray-hide.sh'
+alias fl='fsx-list.sh'
 
 if [ -f ~/.kubeon ]; then
         source ~/kube-ps1.sh

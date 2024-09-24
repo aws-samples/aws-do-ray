@@ -12,7 +12,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
 
 
 # Install basic tools
-apt-get update && apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop bash-completion wget
+apt-get update && apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop bash-completion wget lsof
 
 # Install aws cli
 ./ray/ops/setup/install-aws-cli.sh

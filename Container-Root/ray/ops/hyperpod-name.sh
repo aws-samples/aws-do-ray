@@ -18,6 +18,8 @@ else
 	EKS_CLUSTER_NAME=$AWS_EKS_CLUSTER
 fi
 
+export HYPERPOD_CLUSTER_NAME=""
+
 if [ "$EKS_CLUSTER_NAME" == "" ]; then 
 	echo "" >&2
 	echo "Could not determine EKS_CLUSTER_NAME" >&2
@@ -33,12 +35,14 @@ else
 		# Check if the EKS cluster name matches the expected one
 		if [[ "$MAYBE_EKS_CLUSTER_NAME" == "$EKS_CLUSTER_NAME" ]]; then
 			echo "Match found! Hyperpod cluster: $HP_CLUSTER is associated with EKS cluster: $EKS_CLUSTER_NAME" >&2
-			export AWS_EKS_HYPERPOD_CLUSTER=$HP_CLUSTER
-			echo $HP_CLUSTER
+			export HYPERPOD_CLUSTER_NAME=$HP_CLUSTER
 			break
 		else
-			echo "Not a match. HyperPod cluster: $HP_CLUSTER is associated with EKS cluster: $MAYBE_EKS_CLUSTER_NAME" >&2"
+			echo "Not a match. HyperPod cluster: $HP_CLUSTER is associated with EKS cluster: $MAYBE_EKS_CLUSTER_NAME" >&2
 		fi
 	done
+
 fi
+
+echo $HYPERPOD_CLUSTER_NAME
 
