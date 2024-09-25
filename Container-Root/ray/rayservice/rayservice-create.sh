@@ -42,7 +42,11 @@ else
 fi
 
 echo "Waiting for query service... this service is created after the Ray Serve applications are ready and running so this process may take approximately 1 minute after the pods are running. Please hang tight"
-sleep 100
+SVC_CNT=0
+while [ "$SVC_CNT" == "0" ]; do 
+	sleep 2
+	SVC_CNT=$(kubectl -n kuberay get svc | grep ${MODEL_NAME}-serve-svc | wc -l)
+done
 echo ""
 echo "Forwarding the port for Stable Diffusion Query"
 echo ""
