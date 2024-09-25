@@ -9,7 +9,7 @@ spec:
     - ReadWriteMany # supported options: ReadWriteMany / ReadOnlyMany
   mountOptions:
     - allow-delete
-    - region us-east-2
+    - region ${AWS_REGION}
     - prefix /
   csi:
     driver: s3.csi.aws.com # required
