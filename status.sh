@@ -2,5 +2,8 @@
 
 source .env
 
-docker ps -a | grep ${CONTAINER}
+CMD="docker ps -a | grep ${CONTAINER}"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 

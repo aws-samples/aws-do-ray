@@ -1,9 +1,6 @@
 #!/bin/bash
 
-source .env
-
-CMD="docker container logs -f ${CONTAINER}"
-
+CMD="kubectl get pods -n kuberay"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
 

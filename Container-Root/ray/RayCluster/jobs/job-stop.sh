@@ -15,6 +15,9 @@ fi
 # Assign the user's input to a variable
 submission_id=$1
 
-ray job stop --address http://localhost:8265 $submission_id
+CMD="ray job stop --address http://localhost:8265 $submission_id"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 echo -e "\n"

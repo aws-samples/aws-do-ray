@@ -6,7 +6,7 @@ ray-expose.sh
 if [ -z "$1" ]; then
     echo ""
     echo "Error: No submission_id provided."
-    echo "Usage: ./job-status.sh <submission_id>"
+    echo "Usage: $0 <submission_id>"
     echo "List of jobs to choose from:"
     echo ""
     ray job list --address http://localhost:8265 | sed -n "s/.*submission_id='\([^']*\)'.*entrypoint='\([^']*\)'.*/submission_id: \1, entrypoint: \2/p"
@@ -17,6 +17,9 @@ fi
 # Assign the user's input to a variable
 submission_id=$1
 
-ray job status --address http://localhost:8265 $submission_id
+CMD="ray job status --address http://localhost:8265 $submission_id"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 echo -e "\n"

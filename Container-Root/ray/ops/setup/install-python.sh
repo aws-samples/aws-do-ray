@@ -25,3 +25,11 @@ update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python3 get-pip.py
 rm -f get-pip.py
+
+# Install python libraries
+pip3 install pillow
+
+# Redirect python3.9 to python3.10
+rm /usr/bin/python
+ln -s /usr/bin/python3 /usr/bin/python
+

@@ -1,6 +1,14 @@
 #!/bin/bash
 
-# Apply kuberay Manifests
+# Determine if cluster is EKS or HyperPod
+export AWS_EKS_HYPERPOD_CLUSTER=$(ops/hyperpod-name.sh)
+if [ "$AWS_EKS_HYPERPOD_CLUSTER" == "" ]; then
+        export CLUSTER_TYPE=eks
+else
+        export CLUSTER_TYPE=hyperpod
+fi
+
+# Deploy KubeRay
 NS_COUNT=$(kubectl get namespace kuberay | grep kuberay | wc -l)
 if [ "$NS_COUNT" == "1" ]; then
     echo "Namespace kuberay already exists"
@@ -19,7 +27,7 @@ helm install kuberay-operator kuberay/kuberay-operator --version 1.1.0 --namespa
 kubectl get pods --namespace kuberay
 
 
-# Now creating FSX for Lustre
+# Create FSX for Lustre
 echo "Creating FSX For Lustre Cluster..."
 echo "Deploying FSX Dependences..."
 ./deploy/fsx/deploy.sh

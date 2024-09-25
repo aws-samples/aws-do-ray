@@ -25,7 +25,9 @@ JOB=$(echo "$JOB" | tr '[:upper:]' '[:lower:]')
 #     exit 2
 # fi
 
-kubectl apply -f ${JOB}/ray-job.${JOB}.yaml -n kuberay
+CMD="kubectl apply -f ${JOB}/ray-job.${JOB}.yaml -n kuberay"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 # Check if the kubectl apply command succeeded
 if [ $? -ne 0 ]; then

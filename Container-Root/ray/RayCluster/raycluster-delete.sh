@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Apply the Kubernetes configuration
-kubectl delete -f "raycluster-template.yaml"
+CMD="kubectl delete -f raycluster-template.yaml"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 # Confirm successful deployment
 if [ $? -eq 0 ]; then
@@ -10,7 +13,4 @@ else
     echo "Error deleting cluster."
     exit 3
 fi
-
-
-
 

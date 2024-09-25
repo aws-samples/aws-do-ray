@@ -1,18 +1,16 @@
 #!/bin/bash
 
 # Apply the Kubernetes configuration
-kubectl apply -f "raycluster-template.yaml"
+CMD="kubectl apply -f raycluster-template.yaml"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 # Confirm successful deployment
 if [ $? -eq 0 ]; then
     echo "Cluster deployed successfully."
-    echo "Run 'kubectl get raycluster --namespace kuberay' to view the cluster status."
-    echo "Run 'kubectl get pods --namespace kuberay' to view the cluster pods."
 else
     echo "Error deploying cluster."
     exit 3
 fi
-
-
-
 

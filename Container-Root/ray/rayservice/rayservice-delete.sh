@@ -19,7 +19,9 @@ MODEL_NAME=$1
 # Convert the model name to lowercase for consistency
 MODEL_NAME=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
 
-kubectl delete rayservice $MODEL_NAME -n kuberay
+CMD="kubectl delete rayservice $MODEL_NAME -n kuberay"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 # Check if the kubectl apply command succeeded
 if [ $? -ne 0 ]; then

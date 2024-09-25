@@ -54,6 +54,26 @@ alias neuron-util='neurontop.sh'
 alias re='ray-expose.sh'
 alias rh='ray-hide.sh'
 alias fl='fsx-list.sh'
+alias rcn='raycluster-config.sh'
+alias rcc='raycluster-create.sh'
+alias rcd='raycluster-delete.sh'
+alias rcp='raycluster-pods.sh'
+alias rcs='raycluster-status.sh'
+alias rcjl='job-list.sh'
+alias rcjw='job-logs.sh'
+alias rcjs='job-status.sh'
+alias rcjr='job-submit.sh'
+alias rcjk='job-stop.sh'
+alias rjc='rayjob-create.sh'
+alias rjd='rayjob-delete.sh'
+alias rjl='rayjob-logs.sh'
+alias rjp='rayjob-pods.sh'
+alias rjs='rayjob-status.sh'
+alias rsc='rayservice-create.sh'
+alias rsd='rayservice-delete.sh'
+alias rsp='rayservice-pods.sh'
+alias rss='rayservice-status.sh'
+alias rst='rayservice-test.sh'
 
 if [ -f ~/.kubeon ]; then
         source ~/kube-ps1.sh
@@ -62,7 +82,7 @@ fi
 
 export TERM=xterm-256color
 
-export PATH=$PATH:/aws-do-ray/Container-Root/ray/ops:/ray/ops:.:/root/.krew/bin
+export PATH=$PATH:/aws-do-ray/Container-Root/ray/ops:/ray/ops:.:/root/.krew/bin:/aws-do-ray/ContainerRoot/ray/raycluster:/aws-do-ray/Cotainer-Root/ray/raycluster/jobs:/aws-do-ray/Container-Root/ray/rayjob:/aws-do-ray/Container-Root/ray/rayservice:/ray/raycluster:/ray/raycluster/jobs:/ray/rayjob:/ray/rayservice
 
 EOF
 

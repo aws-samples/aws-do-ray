@@ -7,4 +7,8 @@
 
 source .env
 
-docker container start ${CONTAINER}
+CMD="docker container start ${CONTAINER}"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
+

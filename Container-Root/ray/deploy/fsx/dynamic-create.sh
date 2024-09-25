@@ -6,6 +6,14 @@ pushd /aws-do-ray
 source .env
 popd
 
+# Determine if cluster is EKS or HyperPod
+export AWS_EKS_HYPERPOD_CLUSTER=$(/ray/ops/hyperpod-name.sh)
+if [ "$AWS_EKS_HYPERPOD_CLUSTER" == "" ]; then
+        export CLUSTER_TYPE=eks
+else
+        export CLUSTER_TYPE=hyperpod
+fi
+
 # FSX CONFIGURATION
 
 echo "Getting Subnet ID"

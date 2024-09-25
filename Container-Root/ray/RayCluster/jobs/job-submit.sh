@@ -9,7 +9,9 @@ submit_via_sdk() {
     local working_dir="$script_name"
 
     if [ -d "$working_dir" ]; then
-        ray job submit --address http://localhost:8265 --working-dir "$working_dir" -- python3 "$script_name.py"
+        CMD="ray job submit --address http://localhost:8265 --working-dir \"$working_dir\" -- python3 \"$script_name.py\""
+	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+	eval "$CMD"
     else
         echo "Error: Working directory '$working_dir' does not exist."
         exit 1
@@ -40,7 +42,9 @@ submit_via_head() {
     fi
 
     # Run the Python script on the head pod
-    kubectl exec -it "$head_pod" -n kuberay -- python "/tmp/$script_name.py"
+    CMD="kubectl exec -it "$head_pod" -n kuberay -- python \"/tmp/$script_name.py\""
+    if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+    eval "$CMD"
 }
 
 # Function to submit the job from the local file system
@@ -62,7 +66,9 @@ submit_local_job() {
 
     if [ "$file_exists" == "true" ]; then
         # submit_via_head "$script_name"
-        kubectl exec -it "$head_pod" -n kuberay -- python "$script_path/$script_name.py"
+        CMD="kubectl exec -it \"$head_pod\" -n kuberay -- python \"$script_path/$script_name.py\""
+	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+	eval "$CMD"
     else
         echo "Error: Path '$script_path/$script_name.py' does not exist."
         exit 1

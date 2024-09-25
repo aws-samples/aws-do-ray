@@ -4,7 +4,7 @@
 if [ -z "$1" ]; then
     echo ""
     echo "Error: No job name provided."
-    echo "Usage: ./rayjob-logs.sh <job>"
+    echo "Usage: $0 <job>"
     echo ""
     echo "List of jobs to choose from:"
     echo ""
@@ -16,4 +16,6 @@ fi
 # Assign the user's input to a variable
 JOB=$1
 
-kubectl logs -l=job-name=$JOB -n kuberay
+CMD="kubectl logs -l=job-name=$JOB -n kuberay"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"

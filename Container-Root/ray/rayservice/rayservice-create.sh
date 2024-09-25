@@ -18,7 +18,9 @@ MODEL_NAME=$1
 MODEL_NAME=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
 
 
-kubectl apply -f ${MODEL_NAME}/ray-service.${MODEL_NAME}.yaml -n kuberay
+CMD="kubectl apply -f ${MODEL_NAME}/ray-service.${MODEL_NAME}.yaml -n kuberay"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 
 # Check if the kubectl apply command succeeded
@@ -49,7 +51,7 @@ kubectl port-forward svc/${MODEL_NAME}-serve-svc -n kuberay 8000 > /dev/null 2>&
 if [ $? -eq 0 ]; then
     echo "Query is ready..."
     echo ""
-    echo "Please run './rayservice-send-request.sh ${MODEL_NAME}' to send a request to the model"
+    echo "Please run './rayservice-test.sh ${MODEL_NAME}' to send a request to the model"
     echo ""
     echo "If you would like to change the query, please visit ${MODEL_NAME}_req.py in ${MODEL_NAME} folder and update appropriate variables"
     echo ""
@@ -62,4 +64,4 @@ else
 fi
 
 echo "Run './rayservice-status.sh' to view the serve status."
-echo "Run 'kgp -n kuberay' to view cluster pods."
+echo "Run 'kubectl get pods -n kuberay' to view cluster pods."

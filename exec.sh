@@ -8,5 +8,8 @@ else
 	CMD="$@"
 fi
 
-docker container exec -it ${CONTAINER} $CMD 
+CMDLN="docker container exec -it ${CONTAINER} $CMD"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMDLN}\n"; fi
+eval "$CMDLN"
 

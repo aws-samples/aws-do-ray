@@ -2,5 +2,8 @@
 
 source .env
 
-docker container rm -f ${CONTAINER}
+CMD="docker container rm -f ${CONTAINER}"
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 

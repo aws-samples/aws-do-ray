@@ -5,7 +5,7 @@
 if [ -z "$1" ]; then
     echo ""
     echo "Error: No job name provided."
-    echo "Usage: ./rayjob-delete.sh <job_name>"
+    echo "Usage: $0 <job_name>"
     echo "List of jobs to choose from:"
     echo ""
     ./rayjob-status.sh
@@ -19,8 +19,9 @@ JOB=$1
 # Convert the model name to lowercase for consistency
 JOB=$(echo "$JOB" | tr '[:upper:]' '[:lower:]')
 
-kubectl delete rayjob $JOB -n kuberay
-
+CMD="kubectl delete rayjob $JOB -n kuberay"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 # Confirm successful deployment
 if [ $? -eq 0 ]; then
