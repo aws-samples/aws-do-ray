@@ -14,8 +14,10 @@ if [ -z "$1" ]; then
 fi
 
 # Assign the user's input to a variable
-JOB=$1
+# JOB=$1
+JOB=$(kubectl get rayjob | grep $1 | head -n 1 | cut -d ' ' -f 1)
 
-CMD="kubectl logs -l=job-name=$JOB -n kuberay"
+
+CMD="kubectl logs -l=job-name=$JOB"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"

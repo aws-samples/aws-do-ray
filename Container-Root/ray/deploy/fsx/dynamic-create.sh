@@ -64,18 +64,16 @@ echo "SECURITYGROUP_ID: "
 echo $SECURITYGROUP_ID
 
 
-echo "In kuberay namespace..."
 
 echo "Applying dynamic-storageclass.yaml"
-# kubectl apply -f dynamic-storageclass.yaml -n kuberay
-envsubst < /aws-do-ray/Container-Root/ray/deploy/fsx/dynamic-storageclass.yaml | kubectl apply -n kuberay  -f -
+envsubst < /aws-do-ray/Container-Root/ray/deploy/fsx/dynamic-storageclass.yaml | kubectl apply  -f -
 
 
 echo "Applying dynamic-pvc.yaml"
-kubectl apply -f /aws-do-ray/Container-Root/ray/deploy/fsx/dynamic-pvc.yaml -n kuberay
+kubectl apply -f /aws-do-ray/Container-Root/ray/deploy/fsx/dynamic-pvc.yaml
 
 echo "Describing pvc fsx-claim"
-kubectl describe pvc fsx-claim -n kuberay
+kubectl describe pvc fsx-claim 
 
 
 

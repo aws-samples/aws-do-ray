@@ -14,12 +14,13 @@ if [ -z "$1" ]; then
 fi
 
 # Set the model name from the argument
-JOB=$1
+# JOB=$1
+JOB=$(kubectl get rayjob | grep $1 | head -n 1 | cut -d ' ' -f 1)
 
 # Convert the model name to lowercase for consistency
 JOB=$(echo "$JOB" | tr '[:upper:]' '[:lower:]')
 
-CMD="kubectl delete rayjob $JOB -n kuberay"
+CMD="kubectl delete rayjob $JOB"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
 

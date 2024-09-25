@@ -18,7 +18,7 @@ MODEL_NAME=$1
 MODEL_NAME=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
 
 
-CMD="kubectl apply -f ${MODEL_NAME}/ray-service.${MODEL_NAME}.yaml -n kuberay"
+CMD="kubectl apply -f ${MODEL_NAME}/ray-service.${MODEL_NAME}.yaml"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
 
@@ -45,12 +45,12 @@ echo "Waiting for query service... this service is created after the Ray Serve a
 SVC_CNT=0
 while [ "$SVC_CNT" == "0" ]; do 
 	sleep 2
-	SVC_CNT=$(kubectl -n kuberay get svc | grep ${MODEL_NAME}-serve-svc | wc -l)
+	SVC_CNT=$(kubectl get svc | grep ${MODEL_NAME}-serve-svc | wc -l)
 done
 echo ""
 echo "Forwarding the port for Stable Diffusion Query"
 echo ""
-kubectl port-forward svc/${MODEL_NAME}-serve-svc -n kuberay 8000 > /dev/null 2>&1 &
+kubectl port-forward svc/${MODEL_NAME}-serve-svc 8000 > /dev/null 2>&1 &
 
 if [ $? -eq 0 ]; then
     echo "Query is ready..."
@@ -62,10 +62,10 @@ if [ $? -eq 0 ]; then
 else
     echo "Failed to port forward query..."
     echo ""
-    echo "Issue may be service "svc/${MODEL_NAME}-serve-svc" is not ready... please run 'kubectl get svc -n kuberay' to double check."
-    echo "If it becomes ready, please run 'kubectl port-forward svc/stable-diffusion-serve-svc -n kuberay 8000'"
+    echo "Issue may be service "svc/${MODEL_NAME}-serve-svc" is not ready... please run 'kubectl get svc' to double check."
+    echo "If it becomes ready, please run 'kubectl port-forward svc/stable-diffusion-serve-svc 8000'"
     echo ""
 fi
 
-echo "Run './rayservice-status.sh' to view the serve status."
-echo "Run 'kubectl get pods -n kuberay' to view cluster pods."
+echo "Run './rayservice-status.sh' or ' to view the serve status."
+echo "Run 'kubectl get pods' or 'kgp' to view cluster pods."

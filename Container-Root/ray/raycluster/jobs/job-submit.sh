@@ -25,7 +25,7 @@ submit_via_head() {
     local working_dir="$script_name"
 
     # Get the name of the head pod
-    head_pod=$(kubectl get pods -n kuberay --selector=ray.io/node-type=head -o custom-columns=POD:metadata.name --no-headers)
+    head_pod=$(kubectl get pods --selector=ray.io/node-type=head -o custom-columns=POD:metadata.name --no-headers)
 
     # Check if the head pod is found
     if [ -z "$head_pod" ]; then
@@ -35,14 +35,14 @@ submit_via_head() {
 
     # Copy the script to the head pod
     if [ -d "$working_dir" ]; then
-        kubectl cp "$working_dir/$script_name.py" "$head_pod:/tmp/$script_name.py" -n kuberay
+        kubectl cp "$working_dir/$script_name.py" "$head_pod:/tmp/$script_name.py"
     else
         echo "Error: Working directory '$working_dir' does not exist."
         exit 1
     fi
 
     # Run the Python script on the head pod
-    CMD="kubectl exec -it "$head_pod" -n kuberay -- python \"/tmp/$script_name.py\""
+    CMD="kubectl exec -it "$head_pod" -- python \"/tmp/$script_name.py\""
     if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
     eval "$CMD"
 }
@@ -53,7 +53,7 @@ submit_local_job() {
     local script_name="$1"
     local script_path="$2"
 
-    head_pod=$(kubectl get pods -n kuberay --selector=ray.io/node-type=head -o custom-columns=POD:metadata.name --no-headers)
+    head_pod=$(kubectl get pods --selector=ray.io/node-type=head -o custom-columns=POD:metadata.name --no-headers)
 
     # Check if the head pod is found
     if [ -z "$head_pod" ]; then
@@ -62,11 +62,11 @@ submit_local_job() {
     fi
 
     # Check if the file exists inside the pod
-    file_exists=$(kubectl exec "$head_pod" -n kuberay -- bash -c "[ -f $script_path/$script_name.py ] && echo 'true' || echo 'false'")
+    file_exists=$(kubectl exec "$head_pod" -- bash -c "[ -f $script_path/$script_name.py ] && echo 'true' || echo 'false'")
 
     if [ "$file_exists" == "true" ]; then
         # submit_via_head "$script_name"
-        CMD="kubectl exec -it \"$head_pod\" -n kuberay -- python \"$script_path/$script_name.py\""
+        CMD="kubectl exec -it \"$head_pod\" -- python \"$script_path/$script_name.py\""
 	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 	eval "$CMD"
     else
@@ -77,7 +77,9 @@ submit_local_job() {
 
 # Check if a script name or path has been provided
 if [ "$#" -eq 0 ]; then
-    echo "Usage: $0 <script-name> [script-path]"
+    echo ""
+    echo "Usage: $0 <script-name> optional:[script-path]"
+    echo ""
     exit 1
 fi
 

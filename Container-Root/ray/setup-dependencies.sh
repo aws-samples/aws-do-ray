@@ -35,4 +35,4 @@ echo "Deploying FSX Dependences..."
 echo "Dynamically Provisioning FSX For Lustre Cluster... this may take a few minutes"
 ./deploy/fsx/dynamic-create.sh
 
-echo "Please wait until FSx Cluster is up and ready until you deploy Ray Cluster. Please check AWS Console, or run fsx-list.sh, or use alias fl, or run 'kubectl get pvc -n kuberay' and wait until status is 'Bound'"
+echo "Please wait until FSx Cluster is up and ready until you deploy Ray Cluster. Please check AWS Console, or run fsx-list.sh, or use alias fl, or run 'kubectl get pvc' and wait until status is 'Bound'"

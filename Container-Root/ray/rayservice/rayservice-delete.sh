@@ -19,7 +19,7 @@ MODEL_NAME=$1
 # Convert the model name to lowercase for consistency
 MODEL_NAME=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
 
-CMD="kubectl delete rayservice $MODEL_NAME -n kuberay"
+CMD="kubectl delete rayservice $MODEL_NAME"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
 
@@ -34,7 +34,7 @@ fi
 if [ $? -eq 0 ]; then
     echo "Service deleted successfully for model: $MODEL_NAME."
     echo "Run './rayservice-status.sh' to view the serve status."
-    echo "Run 'kgp -n kuberay' to view cluster pods."
+    echo "Run 'kgp' to view cluster pods."
     echo ""
 else
     echo "Error deleting RayService for model: $MODEL_NAME"

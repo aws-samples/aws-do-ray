@@ -2,7 +2,6 @@ apiVersion: ray.io/v1
 kind: RayCluster
 metadata:
   name: raycluster-autoscaler
-  namespace: kuberay
   labels:
     controller-tools.k8s.io: "1.0"
 spec:
