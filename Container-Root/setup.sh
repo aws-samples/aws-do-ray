@@ -62,27 +62,27 @@ python -m pip install torchx[kubernetes]
 # Install sbom utils
 ./ray/ops/setup/install-sbom-utils.sh
 
-# AWS Credentials
-# AWS Credentials setup
-if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ] && [ -n "$AWS_SESSION_TOKEN" ]; then
-  # Create AWS directory and files
-  mkdir -p /root/.aws
+# # AWS Credentials
+# # AWS Credentials setup
+# if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ] && [ -n "$AWS_SESSION_TOKEN" ]; then
+#   # Create AWS directory and files
+#   mkdir -p /root/.aws
 
-  # Set AWS credentials
-  cat > /root/.aws/credentials << EOL
-[default]
-aws_access_key_id = $AWS_ACCESS_KEY_ID
-aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
-aws_session_token = $AWS_SESSION_TOKEN
-EOL
+#   # Set AWS credentials
+#   cat > /root/.aws/credentials << EOL
+# [default]
+# aws_access_key_id = $AWS_ACCESS_KEY_ID
+# aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
+# aws_session_token = $AWS_SESSION_TOKEN
+# EOL
 
-  # Set AWS default region and output format
-  if [ -n "$AWS_REGION" ]; then
-    cat > /root/.aws/config << EOL
-[default]
-region = $AWS_REGION
-output = json
-EOL
-  fi
-fi
+#   # Set AWS default region and output format
+#   if [ -n "$AWS_REGION" ]; then
+#     cat > /root/.aws/config << EOL
+# [default]
+# region = $AWS_REGION
+# output = json
+# EOL
+#   fi
+# fi
 
