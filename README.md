@@ -149,14 +149,14 @@ For an easy way to expose the Ray Dashboard, we can use kubectl port-forward. To
 
 If you are on a machine with its own browser, just navigate to http://localhost:8265 to open the Ray Dashboard.
 
-<center><img src="./img/dashboard.png" width="80%" /></center> <br/>
-<center>Fig.3 - Ray Dashboard Overview</center> <br/>
+<center><img src="./img/dashboard.png" width="80%" /></center>
+<center>Fig.4 - Ray Dashboard Overview</center> <br/>
 
-<center><img src="./img/dashboard-jobs.png" width="80%" /></center> <br/>
-<center>Fig.4 - Ray Dashboard Jobs</center> <br/>
+<center><img src="./img/dashboard-jobs.png" width="80%" /></center>
+<center>Fig.5 - Ray Dashboard Jobs</center> <br/>
 
-<center><img src="./img/dashboard-metrics.png" width="80%" /></center> <br/>
-<center>Fig.5 - Ray Dashboard Metrics</center> <br/>
+<center><img src="./img/dashboard-metrics.png" width="80%" /></center>
+<center>Fig.6 - Ray Dashboard Metrics</center> <br/>
 
 ## Create a RayJob
 Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/rayjob`](/Container-Root/ray/rayjob/) directory. Within this directory, you will find these scripts:
