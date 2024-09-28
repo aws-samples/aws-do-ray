@@ -3,7 +3,8 @@
 # AWS do Ray (aws-do-ray) <br/> Create and manage your Ray clusters on Amazon EKS using the [do-framework](https://bit.ly/do-framework)
 
 <center>
-<img src="./img/architecture.png" width="80%"/></br>
+<img src="./img/architecture.png" width="80%"/>
+
 Fig. 1 - Ray on EKS cluster sample
 </center>
 <br/>
@@ -24,7 +25,8 @@ The only prerequisites needed to run this project are:
  A typical workflow for the `aws-do-ray` project is described below.
 
 <center>
-<img src="./img/deployment.png" width="80%" /><br/>
+<img src="./img/deployment.png" width="80%" />
+
 Fig.2 - Typical workflow for the aws-do-ray project
 </center>
 <br/>
@@ -101,7 +103,8 @@ The KubeRay Operator gets deployed on the EKS cluster through the `./setup-depen
 5. RayService: Kubernetes resource that enables long-running Ray applications. It allows for the deployment of Ray applications that need to be exposed for external communication, typically through a service endpoint.
 
 <center>
-<img src="./img/CRDs2.png" width="80%" /><br/>
+<img src="./img/CRDs2.png" width="80%" />
+
 Fig.2 - Types of Ray custom resources in Kubernetes
 </center>
 <br/>
@@ -111,7 +114,8 @@ The KubeRay operator relies on the Kubernetes API and works on EKS as well as Hy
 A diagram showing deployment of Ray on SageMaker HyperPod is shown below.
 
 <center>
-<img src="./img/ray-hyperpod-arch.png" width="80%" /><br/>
+<img src="./img/ray-hyperpod-arch.png" width="80%" />
+
 Fig.3 - KubeRay operator deployment on SageMaker HyperPod EKS cluster
 </center>
 <br/>
@@ -164,21 +168,24 @@ For an easy way to expose the Ray Dashboard, we can use kubectl port-forward. To
 If you are on a machine with its own browser, just navigate to http://localhost:8265 to open the Ray Dashboard.
 
 <center>
-<img src="./img/dashboard.png" width="80%" /><br/>
+<img src="./img/dashboard.png" width="80%" />
+
 Fig.4 - Ray Dashboard Overview
 </center> 
 <br/>
 <br/>
 
 <center>
-<img src="./img/dashboard-jobs.png" width="80%" /><br/>
+<img src="./img/dashboard-jobs.png" width="80%" />
+
 Fig.5 - Ray Dashboard Jobs
 </center> 
 <br/>
 <br/>
 
 <center>
-<img src="./img/dashboard-metrics.png" width="80%" /><br/>
+<img src="./img/dashboard-metrics.png" width="80%" />
+
 Fig.6 - Ray Dashboard Metrics
 </center>
 <br/>
