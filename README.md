@@ -2,10 +2,12 @@
 
 # AWS do Ray (aws-do-ray) <br/> Create and manage your Ray clusters on Amazon EKS using the [do-framework](https://bit.ly/do-framework)
 
-<center><img src="./img/architecture.png" width="80%"/> </br>
-
+<center>
+<img src="./img/architecture.png" width="80%"/></br>
 Fig. 1 - Ray on EKS cluster sample
 </center>
+<br/>
+<br/>
 
 
 ## Overview
@@ -21,8 +23,12 @@ The only prerequisites needed to run this project are:
 ## Usage
  A typical workflow for the `aws-do-ray` project is described below.
 
-<center><img src="./img/deployment.png" width="80%" /></center> <br/>
-<center>Fig.2 - Typical workflow for the aws-do-ray project</center> <br/>
+<center>
+<img src="./img/deployment.png" width="80%" /><br/>
+Fig.2 - Typical workflow for the aws-do-ray project
+</center>
+<br/>
+<br/>
 
 To use the project, you can clone and configure it, then run the `./build.sh`, `./run.sh`, and `./exec.sh` scripts to open the `aws-do-ray` shell. Execute the `./setup-dependencies.sh` script, then from the raycluster directory execute `./raycluster-config.sh` and `./raycluster-create.sh`. Once the cluster is created, examples can be executed from the [jobs](https://github.com/aws-samples/aws-do-ray/tree/main/Container-Root/ray/raycluster/jobs) folder, submit one of the jobs using `./job-submit.sh <job-folder-name>
 
@@ -94,14 +100,22 @@ The KubeRay Operator gets deployed on the EKS cluster through the `./setup-depen
 
 5. RayService: Kubernetes resource that enables long-running Ray applications. It allows for the deployment of Ray applications that need to be exposed for external communication, typically through a service endpoint.
 
-<center><img src="./img/CRDs2.png" width="80%" /></center> <br/>
-<center>Fig.2 - Types of Ray custom resources in Kubernetes</center> <br/>
+<center>
+<img src="./img/CRDs2.png" width="80%" /><br/>
+Fig.2 - Types of Ray custom resources in Kubernetes
+</center>
+<br/>
+<br/>
 
 The KubeRay operator relies on the Kubernetes API and works on EKS as well as HyperPod clusters with EKS support. 
 A diagram showing deployment of Ray on SageMaker HyperPod is shown below.
 
-<center><img src="./img/ray-hyperpod-arch.png" width="80%" /></center> <br/>
-<center>Fig.3 - KubeRay operator deployment on SageMaker HyperPod EKS cluster</center> <br/>
+<center>
+<img src="./img/ray-hyperpod-arch.png" width="80%" /><br/>
+Fig.3 - KubeRay operator deployment on SageMaker HyperPod EKS cluster
+</center>
+<br/>
+<br/>
 
 ## Distributed training jobs
 Additional information about your distributed training jobs.
@@ -149,14 +163,26 @@ For an easy way to expose the Ray Dashboard, we can use kubectl port-forward. To
 
 If you are on a machine with its own browser, just navigate to http://localhost:8265 to open the Ray Dashboard.
 
-<center><img src="./img/dashboard.png" width="80%" /></center>
-<center>Fig.4 - Ray Dashboard Overview</center> <br/>
+<center>
+<img src="./img/dashboard.png" width="80%" /><br/>
+Fig.4 - Ray Dashboard Overview
+</center> 
+<br/>
+<br/>
 
-<center><img src="./img/dashboard-jobs.png" width="80%" /></center>
-<center>Fig.5 - Ray Dashboard Jobs</center> <br/>
+<center>
+<img src="./img/dashboard-jobs.png" width="80%" /><br/>
+Fig.5 - Ray Dashboard Jobs
+</center> 
+<br/>
+<br/>
 
-<center><img src="./img/dashboard-metrics.png" width="80%" /></center>
-<center>Fig.6 - Ray Dashboard Metrics</center> <br/>
+<center>
+<img src="./img/dashboard-metrics.png" width="80%" /><br/>
+Fig.6 - Ray Dashboard Metrics
+</center>
+<br/>
+<br/>
 
 ## Create a RayJob
 Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/rayjob`](/Container-Root/ray/rayjob/) directory. Within this directory, you will find these scripts:
