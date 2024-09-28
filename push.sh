@@ -12,7 +12,14 @@ fi
 ./login.sh
 
 CMD="docker image push ${REGISTRY}${IMAGE}${TAG}"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
+CMD="docker image tag ${REGISTRY}${IMAGE}${TAG} ${REGISTRY}${IMAGE}:latest"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
+
+CMD="docker image push ${REGISTRY}${IMAGE}:latest"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
 
