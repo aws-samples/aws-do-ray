@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cron-job
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template: 
+        spec: 
+          serviceAccountName: cron-job
+          containers:
+            - name: cron-job
+              image: ${REGISTRY}${IMAGE}:latest
+          restartPolicy: OnFailure
