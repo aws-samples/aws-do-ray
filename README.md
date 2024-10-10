@@ -1,50 +1,88 @@
 <img alt="aws-do-ray" src="./img/aws-do-ray-1024.png" width="25%" align="right" />
 
-# AWS Do Ray (aws-do-ray) <br/> Create and Manage your Ray on Amazon EKS clusters using the [do-framework](https://bit.ly/do-framework)
+# AWS do Ray (aws-do-ray) <br/> Create and manage your Ray clusters on Amazon EKS using the [do-framework](https://bit.ly/do-framework)
 
-<center><img src="./img/architecture.png" width="80%"/> </br>
+<center>
+<img src="./img/architecture.png" width="80%"/>
 
 Fig. 1 - Ray on EKS cluster sample
 </center>
+<br/>
+<br/>
 
 
 ## Overview
-AWS-Do-Ray aims to simplify the deployment and scaling of distributed Python applications, specifically, [Ray](https://www.ray.io/), on [Amazon Elastic Kubernetes Service](https://docs.aws.amazon.com/whitepapers/latest/overview-deployment-options/amazon-elastic-kubernetes-service.html) (Amazon EKS) clusters, as well as [Amazon SageMaker Hyperpod EKS Cluster](https://aws.amazon.com/sagemaker/hyperpod/). By adhering to the principles of the [do-framework](https://bit.ly/do-framework) and the [Depend on Docker](https://github.com/iankoulski/depend-on-docker) template, it will containerize all the tools necessary to deploy and manage Ray using [Docker](https://docs.docker.com/get-docker/), then executes the deployment from within the container. This project will provide a streamlined and intuitive solution for developers, enabling them to focus on application development rather than infrastructure management. Overall, it will be a simple, flexible, and universal deployment solution for Ray clusters. 
-
-The [do-framework](https://bit.ly/do-framework) strives to simplify DevOps and MLOps tasks by automating complex operations into intuitive action scripts. The only prerequisite needed to build and run this project is an AWS Account, an EKS Cluster, and [Docker](https://docs.docker.com/get-docker/). The main use case of this project is to streamline and make an intuitive solution for developers to specify a desired ray cluster configuration, deploy this ray cluster, and run their workloads. This process is described in further detail below.
-
-The deployment process is described on Fig. 2 below:
-
-<center><img src="./img/deployment.png" width="80%" /></center> <br/>
-<center>Fig.2 - Ray deployment process with aws-do-ray</center> <br/>
-
+The [`aws-do-ray`](https://bit.ly/aws-do-ray) project aims to simplify the deployment and scaling of distributed Python application using [Ray](https://www.ray.io/) on [Amazon Elastic Kubernetes Service](https://docs.aws.amazon.com/whitepapers/latest/overview-deployment-options/amazon-elastic-kubernetes-service.html) (Amazon EKS) or [Amazon SageMaker Hyperpod](https://aws.amazon.com/sagemaker/hyperpod/). While following the principles of the [do-framework](https://bit.ly/do-framework) and using the [Depend on Docker](https://github.com/iankoulski/depend-on-docker) template, it uses [Docker](https://docs.docker.com/get-docker/) to containerize all tools necessary to deploy and manage Ray clusters, jobs, and services. The `aws-do-ray` container shell is equipped with intuitive action scripts and comes pre-configured with convenient shortcuts which save extensive typing and increase productivity. This project provides a streamlined solution for administrators and developers, enabling them to focus on the task at hand, rather than infrastructure management. In summary, `aws-do-ray` is a simple, flexible, and universal DevOps solution for Ray workloads on AWS. 
 
 ## Prerequisites
-1. AWS Account - you will need an AWS account
-2. EKS Cluster - it is assumed that an EKS cluster already exists in the account. If a cluster is needed, one way to create it, is by following the instructions in the [aws-do-eks](https://github.com/aws-samples/aws-do-eks) project. 
-3. Docker - you can download docker [here](https://docs.docker.com/get-docker/)
-4. Please ensure you have [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) > 2.XX.XX installed
-5. Ensure your AWS CLI is configured to your credentials, `aws configure`, and EKS cluster by setting your context: [create-kubeconfig](https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html). You can double check this by running `kubectl config current-context`.
-5. This project also works with Amazon SageMaker Hyperpod Clusters supported by Amazon EKS, so if you'd like to use Hyperpod, you can create your Amazon Hyperpod cluster by following instructions in [aws-do-hyperpod](https://github.com/aws-samples/aws-do-hyperpod/tree/main)
+The only prerequisites needed to run this project are:
 
+* [AWS Account](https://signin.aws.amazon.com/signup?request_type=register)
+* [EKS](https://bit.ly/do-eks) or [HyperPod](https://bit.ly/aws-do-hyperpod) cluster
+* [Docker](https://docs.docker.com/get-docker/)
 
+## Usage
+ A typical workflow for the `aws-do-ray` project is described below.
+
+<center>
+<img src="./img/deployment.png" width="80%" />
+
+Fig.2 - Typical workflow for the aws-do-ray project
+</center>
+<br/>
+<br/>
+
+To use the project, you can clone and configure it, then run the `./build.sh`, `./run.sh`, and `./exec.sh` scripts to open the `aws-do-ray` shell. Execute the `./setup-dependencies.sh` script, then from the raycluster directory execute `./raycluster-config.sh` and `./raycluster-create.sh`. Once the cluster is created, examples can be executed from the [jobs](https://github.com/aws-samples/aws-do-ray/tree/main/Container-Root/ray/raycluster/jobs) folder, submit one of the jobs using `./job-submit.sh <job-folder-name>
+
+```bash
+# Build and run container
+git clone https://github.com/aws-samples/aws-do-ray
+cd aws-do-ray
+./config.sh
+./build.sh
+./run.sh
+./exec.sh
+
+# Create Ray cluster
+./setup-dependencies.sh
+cd raycluster
+./raycluster-config.sh
+./raycluster-create.sh
+./raycluster-status.sh
+
+# Run job
+cd jobs
+./job-submit.sh quickstart
+./job-list.sh
+```
 
 ## Configure
+
+To configure your aws client, execute `aws configure` within the container shell, or outside the container, if you have aws CLI v2.x installed.
+
+If you are not connected to an EKS cluster yet, follow the instructions [here](https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html) to generate a `~/.kube/config` file. The project will automatically use the current kubernetes conext to retrieve the name of the EKS cluster it should connect to. Your current EKS cluser context can be displayed by using the following command: `kubectl config current-context`.
+
 All configuration settings of the `aws-do-ray` project are centralized in its [`.env`](.env)) file. To review or change any of the settings, simply execute [`./config.sh`](./config.sh)).
-The project automatically retrieves these variables, but you can manually set them as well:
+The project automatically sets all variables, but you can manually override any of them by setting your preferred value in the `.env` file.
+
 * AWS_REGION should match the AWS Region where the cluster is deployed.
 * The AWS_EKS_CLUSTER setting should match the name of your existing EKS Cluster. 
 * AWS_EKS_HYPERPOD_CLUSTER setting should match the name of your existing EKS Hyperpod Cluster
 * CLUSTER_TYPE setting must either be "eks" or "hyperpod" depending on what type of cluster you are using.
 
-
-To configure credentials, run aws configure. Credentials you configure on the host will be mounted into the `aws-do-eks` container according to the `VOL_MAP` setting in [`.env`](.env). When in the container, you can check credentials in ~/.aws/credentials. 
+To configure credentials of your aws client, run `aws configure`. Credentials you configure either on the host or in the containr will be mounted into the `aws-do-eks` container according to the `VOL_MAP` setting in [`.env`](.env). If you set the following environment variables `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`, they will be carried over into the `aws-do-ray` container when the `./run.sh` script is executed. 
 
 ## Build
 This project follows the [Depend on Docker](https://github.com/iankoulski/depend-on-docker) template to build a container including all needed tools and utilities for creation and management of Ray. Please execute the [`./build.sh`](./build.sh) script to create the `aws-do-ray` container image and tag it using the registry and version tag specified in the project configuration. If desired, the image name or registry address can be modified in the project configuration file [`.env`](.env).
+A pre-built `aws-do-ray` container is available on the [AWS public registry](https://gallery.ecr.aws/hpc-cloud/) 
 
 ## Run
 The [`./run.sh`](./run.sh) script starts the project container. 
+If you would like to run the pre-built `aws-do-ray` container, you can configure the project with `REGISTRY=public.ecr.aws/hpc-cloud/aws-do-ray`, prior to executing `./run.sh` or just execute the following command:
+
+```bash
+docker run --rm -it -v ${HOME}/.aws:/root/aws -v ${HOME}/.kube:/root/.kube --workdir /ray public.ecr.aws/hpc-cloud/aws-do-ray bash
+```
 
 ## Status
 To check the status of the container, execute [`./status.sh`](./status.sh). If the container is in the Exited state, it can be started with [`./start.sh`](./start.sh).
@@ -52,81 +90,109 @@ To check the status of the container, execute [`./status.sh`](./status.sh). If t
 ## Exec
 After the container is started, use the [`./exec.sh`](./exec.sh) script to open a bash shell in the container. All necessary tools to allow creation, management, and operation of Ray are available in this shell. 
 
-## Deploy KubeRay Operator
-Once you have opened the `aws-do-ray` shell you will be dropped in the [`/ray`](/Container-Root/ray/) directory where you will find the [`./setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script. This deployment creates a kuberay namespace and a kuberay-operator pod in your EKS cluster within your head node in the kuberay namespace. It will then dynamically provision an FSx for Lustre cluster for a shared file system for your ray cluster. Upon successful deployment, you will have the kuberay operator pod in your head EKS node, and a bound PVC. To check the state of the pod in the cluster, use command: `kgp -n kuberay`, and to check the state of your PVC, please run `kubectl get pvc -n kuberay`.
+## Deploy KubeRay operator
+Once you have opened the `aws-do-ray` shell you will be dropped in the [`/ray`](/Container-Root/ray/) directory where you will find the [`./setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script. This deployment creates a `kuberay` namespace and a `kuberay-operator` pod in the kuberay namespace. It will then dynamically provision an FSx for Lustre volume for a shared file system in your Ray cluster. Upon successful deployment, you will have the kuberay operator pod running in the kuberay namespace, and a bound persistent volume claim (PVC) in your current namespace. To check the state of the kuberay-operator pod, use command: `kubectl -n kuberay get pods`, and to check the state of your PVC, please run `kubectl get pvc`.
 
-### The KubeRay Operator
-The KubeRay Operator: gets deployed on the user’s EKS cluster. This allows for 3 different types of Ray deployments: RayCluster, RayService, and RayJobs.
+### The KubeRay operator
+The KubeRay Operator gets deployed on the EKS cluster through the `./setup-dependencies.sh` script. KubeRay creates the following Custom Resource Definitions (CRDs): RayCluster, RayService, and RayJobs.
 
-1. RayCluster: primary resource for managing Ray instances on Kubernetes. It represents a cluster of Ray nodes, including a head node and multiple worker nodes. The RayCluster dictates how the Ray nodes are set up, how they communicate, and how resources are allocated among them.
+1. RayCluster: primary resource for managing Ray instances on Kubernetes. It represents a cluster of Ray nodes, including a head node and multiple worker nodes. The RayCluster CRD determines how the Ray nodes are set up, how they communicate, and how resources are allocated among them. The nodes in a Ray cluster manifest as pods in the EKS cluster.
 
 3. RayJob: represents a single executable job that runs on a RayCluster. It is a higher-level abstraction used to submit tasks or batches of tasks that should be executed by the RayCluster.
 
-5. RayService: Kubernetes resource that enables long-running Ray applications. It allows for the deployment of Ray applications that need to be exposed for external communication, typically through a consistent endpoint.
+5. RayService: Kubernetes resource that enables long-running Ray applications. It allows for the deployment of Ray applications that need to be exposed for external communication, typically through a service endpoint.
 
-<center><img src="./img/CRDs2.png" width="80%" /></center> <br/>
-<center>Fig.2 - 3 types of Ray deployments</center> <br/>
+<center>
+<img src="./img/CRDs2.png" width="80%" />
 
+Fig.2 - Types of Ray custom resources in Kubernetes
+</center>
+<br/>
+<br/>
 
+The KubeRay operator relies on the Kubernetes API and works on EKS as well as HyperPod clusters with EKS support. 
+A diagram showing deployment of Ray on SageMaker HyperPod is shown below.
 
-## Distributed Training Jobs
-Extra information for your distributed training jobs.
-1. From [Ray Documentation](https://docs.ray.io/en/latest/train/getting-started-pytorch.html), specifying a shared storage location (such as cloud storage or NFS) is optional for single-node clusters, but it is required for multi-node clusters. Using a local path will raise an error during checkpointing for multi-node clusters. This is why the [`./setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script deploys an FSx for Lustre cluster. For other deployments, like S3 Mount point, please refer to the [`Deploy Scripts`](#deploy-scripts) section of the ReadMe. Once this is done, reference storage_path within RunConfig within the python training scripts as the path in your shared storage where you'd like to place your checkpoints, logs, and model artifacts. By default, it currently references your newly provisioned FSx for Lustre mount. 
+<center>
+<img src="./img/ray-hyperpod-arch.png" width="80%" />
+
+Fig.3 - KubeRay operator deployment on SageMaker HyperPod EKS cluster
+</center>
+<br/>
+<br/>
+
+## Distributed training jobs
+Additional information about your distributed training jobs.
+1. From [Ray Documentation](https://docs.ray.io/en/latest/train/getting-started-pytorch.html), specifying a shared storage location (such as cloud storage or NFS) is optional for single-node clusters, but it is required for multi-node clusters. Using a local path will raise an error during checkpointing for multi-node clusters. This is why the [`./setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script creates an FSx for Lustre volume. For other deployments, like S3 Mount point, please refer to the [`Deploy Scripts`](#deploy-scripts) section of this document. Once you have a shared storage path, use `storage_path` in the `RunConfig` of your Python training scripts to save checkpoints, logs, and model artifacts. By default, it points to your new FSx for Lustre mount.
 
 2. Within the python code provided, you can also set num_workers to an int (the number of ray workers you are using) and use_gpu to a boolean (True or False, default is set to True). Default is num_workers=2 and use_gpu=True. 
 
 
-
 ## Create a RayCluster
-Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/RayCluster`](/Container-Root/ray/raycluster/) directory. Within this directory, you will find these scripts:
+Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/raycluster`](/Container-Root/ray/raycluster/) directory. This directory contains the following scripts:
 - [`./raycluster-create.sh`](/Container-Root/ray/raycluster/raycluster-create.sh) : this script creates the ray cluster specified in the [`raycluster-template.yaml`](/Container-Root/ray/raycluster/raycluster-template.yaml) file. 
 - [`./raycluster-delete.sh`](/Container-Root/ray/raycluster/delete-cluster.sh) : this script deletes the ray cluster specified in the [`raycluster-template.yaml`](/Container-Root/ray/raycluster/raycluster-template.yaml) file. 
-- [`./raycluster-pods.sh`](/Container-Root/ray/raycluster/raycluster-pods.sh) : this script allows you to see your currently running pods of your raycluster.
+- [`./raycluster-pods.sh`](/Container-Root/ray/raycluster/raycluster-pods.sh) : this script allows you to see your currently running pods(or nodes) of your raycluster.
 - [`./raycluster-status.sh`](/Container-Root/ray/raycluster/raycluster-status.sh) : this script retrieves the status of your current raycluster. 
-- Please run [`re`] to expose ray cluster to port :8265, and [`rh`] to stop expose. 
+- You can run [`re`] to expose ray cluster to port :8265, and [`rh`] to hide it. This is also done automatically when needed by other scripts.
 - [`./raycluster-config.sh`](/Container-Root/ray/raycluster/raycluster-config.sh) : run this to edit the [`raycluster-template.yaml`](/Container-Root/ray/raycluster/raycluster-template.yaml), or simply open the [`raycluster-template.yaml`](/Container-Root/ray/raycluster/raycluster-template.yaml) in your favorite editor.
-- [`raycluster-template.yaml`](/Container-Root/ray/RayCluster/raycluster-template.yaml) : a default ray cluster configuration with every option you can have in a ray cluster. "Batteries included but swappable and/or removable". 
+- [`raycluster-template.yaml`](/Container-Root/ray/RayCluster/raycluster-template.yaml) : a default ray cluster configuration with every option you can have in a ray cluster. "Batteries included but swappable". 
 - [`raycluster-template-autoscaler.yaml`](/Container-Root/ray/raycluster/raycluster-template-autoscaler.yaml) : the same ray cluster configuration but with the ray autoscaler enabled.
 - [`./jobs/job-submit.sh <job>`](/Container-Root/ray/raycluster/jobs/job-submit.sh) : this script allows you to submit a Python Script for a job. You can put your code within the [`/jobs`](/Container-Root/ray/raycluster/jobs/) section of the repo with a directory named after the script you want to execute, with that script within that directory. Or you can submit it via file system that has your script that is attached to your ray pods. 
 	- If your script is in the [`/jobs`](/Container-Root/ray/raycluster/jobs/) folder, it will submit the ray job via the ray job submission SDK (dashboard must be exposed via [`re`](/Container-Root/ray/ops/ray-expose.sh)) or it will submit directly through the head pod. Just run `./job-submit.sh <script name>`. Ex/ `./job-submit.sh dt-pytorch`.
-	- If your script is in a file system that is attached to your ray pods, it you must specify the directory that the script is in relative to your head pod. Run `./job-submit.sh <script name> <directory>`. Ex/ `./job-submit.sh dt-pytorch fsx/code/dt-pytorch` where i have my dt-pytorch.py file in the directory fsx/code/dt-pytorch. 
+	- If your script is in a file system that is attached to your ray pods, it you must specify the directory that the script is in relative to your head pod. Run `./job-submit.sh <script name> <directory>`. Ex/ `./job-submit.sh dt-pytorch fsx/code/dt-pytorch` where my dt-pytorch.py file is located in directory fsx/code/dt-pytorch. 
 
-### RayCluster Template
-For everything you need to know about the details of a RayCluster configuration, please refer to the comments in the template, as well as this [doc](https://docs.ray.io/en/latest/cluster/kubernetes/user-guides/config.html). But as a quick reference, here are the main concepts in the template you should look at:
+### RayCluster template
+For everything you need to know about the details of a RayCluster configuration, please refer to the comments in the template, as well as this [doc](https://docs.ray.io/en/latest/cluster/kubernetes/user-guides/config.html). But as a quick reference, here are the main concepts in the template:
 * metadata: name: 
-    * This is where you will name your raycluster.
+    * This is where you can name your raycluster.
 * nodeSelector in both headGroupSpec and workerGroupSpecs:
-    * This is where you will specify which nodes your head pod and worker pods will get assigned to. Preferably assign the worker group pods to the nodes with GPU's. 
+    * This is where you can specify which nodes your head pod and worker pods get assigned to. Preferably assign the worker group pods to the nodes with GPU's. 
 * replicas
-    * This will define how many min, max, and desired worker pods your RayCluster will have. 
+    * This defines how many min, max, and desired worker pods are in your RayCluster. 
 * containers: resources: limits/requests:
     * These fields are under both headGroupSpec and workerGroupSpecs and these values set resource limits and requests for your pods. Please confirm your node resource capabilities before setting these values.
 * containers: image: 
-    * This is the container image each pod will run. It is best practice that the head pod and worker pods use the same container image, ex/ "rayproject/ray-ml:latest"
+    * This is the container image each pod runs. It is best practice that the head pod and worker pods use the same container image, ex/ "rayproject/ray-ml:latest"
 * containers: env: name: (AWS KEYS)
-    * After deploying your kubectl secrets after running [`./deploy/kubectl-secrets/kubectl-secret-keys.sh`](./Container-Root/ray/deploy/kubectl-secrets/kubectl-secret-keys.sh) your Ray pods will now have your IAM permissions to access your or other buckets/filesystems/etc. If this is needed, please comment this section out in the template. 
+    * After deploying your kubectl secrets by running [`./deploy/kubectl-secrets/kubectl-secret-keys.sh`](./Container-Root/ray/deploy/kubectl-secrets/kubectl-secret-keys.sh) your Ray pods will now have IAM permissions to access other buckets/filesystems/etc. If this is needed, please uncomment this section out in the template. 
 * volumeMounts and volumes under headGroupSpec and workerGroupSpecs
     * This is where you can mount volumes like S3, EFS, FSx for Lustre on to your pods.
-    * **This is needed for multi node distributed training jobs!!**
+This is needed for multi node distributed training jobs.
 
-### Ray Dashboard
-In order to access the Ray Dashboard, the Istio Ingress Gateway service of this Ray deployment needs to be exposed outside the cluster. In a production deployment this is typically done via an Application Load Balancer (ALB), however this requires a DNS domain registration and a matching SSL certificate.
+### Ray dashboard
+In order to access the Ray Dashboard, the Istio Ingress Gateway service of the Ray deployment needs to be exposed outside the cluster. In a production deployment typically an Application Load Balancer (ALB) is used, however this requires a DNS domain registration and a matching SSL certificate.
 
-For an easy way to expose the Ray Dashboard, we can use kubectl port-forward. To start the port-forward, simply execute [`re`]. To stop the port-forward, simply execute [`rh`].
+For an easy way to expose the Ray Dashboard, we can use kubectl port-forward. To start the port-forward, simply execute `ray-expose.sh` or `re`. To stop the port-forward, simply execute `ray-hide.sh` or `rh`.
 
 If you are on a machine with its own browser, just navigate to http://localhost:8265 to open the Ray Dashboard.
 
-<center><img src="./img/dashboard.png" width="80%" /></center> <br/>
-<center>Fig.3 - Ray Dashboard Overview</center> <br/>
+<center>
+<img src="./img/dashboard.png" width="80%" />
 
-<center><img src="./img/dashboard-jobs.png" width="80%" /></center> <br/>
-<center>Fig.4 - Ray Dashboard Jobs</center> <br/>
+Fig.4 - Ray Dashboard Overview
+</center> 
+<br/>
+<br/>
 
-<center><img src="./img/dashboard-metrics.png" width="80%" /></center> <br/>
-<center>Fig.5 - Ray Dashboard Metrics</center> <br/>
+<center>
+<img src="./img/dashboard-jobs.png" width="80%" />
+
+Fig.5 - Ray Dashboard Jobs
+</center> 
+<br/>
+<br/>
+
+<center>
+<img src="./img/dashboard-metrics.png" width="80%" />
+
+Fig.6 - Ray Dashboard Metrics
+</center>
+<br/>
+<br/>
 
 ## Create a RayJob
-Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/RayJob`](/Container-Root/ray/rayjob/) directory. Within this directory, you will find these scripts:
+Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/rayjob`](/Container-Root/ray/rayjob/) directory. Within this directory, you will find these scripts:
 - [`./rayjob-create.sh <Job>`](/Container-Root/ray/rayjob/rayjob-create.sh) : this script creates the rayjob. This consists of a RayJob and a RayCluster. The RayJob manages the RayCluster. 
 - [`./rayjob-delete.sh`](/Container-Root/ray/rayjob/rayjob-delete.sh) : this script deletes the rayjob speficied in the [`rayjob-template.yaml`](/Container-Root/ray/RayJob/rayjob-template.yaml)
 - [`./rayjob-logs.sh](/Container-Root/ray/rayjob/rayjob-logs.sh) : this script allows you to see the logs of your rayjob.
@@ -136,22 +202,20 @@ Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/RayJob
 - Please run [`re`] to expose ray cluster to port :8265, and [`rh`] to stop expose. 
 
 
-### RayJob Documentation
+### RayJob documentation
 You can find RayJob Documentation [here](https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/rayjob-quick-start.html)
 
 
-## Create a RayServe
-Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/rayservice`](/Container-Root/ray/rayservice/) directory. Within this directory, you will find these scripts:
-- [`./rayservice-create.sh <model>`](/Container-Root/ray/rayservice/rayservice-create.sh) : this script creates the rayservice. This creates the rayservice cluster and exposes the service port for querying your served model.
+## Create a RayService
+Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/rayservice`](/Container-Root/ray/rayservice/) directory, which contains the following scripts:
+- [`./rayservice-create.sh <model>`](/Container-Root/ray/rayservice/rayservice-create.sh) : this script creates a rayservice cluster and exposes the service port for querying your served model.
 - [`./rayservice-test.sh <model>`](/Container-Root/ray/rayservice/rayservice-test.sh) : this script sends the query specificed in the [`<model>/<model>_req.py] file to your rayservice cluster. Feel free to edit the query before running this script. 
 - [`./rayjob-delete.sh <model>`](/Container-Root/ray/rayservice/rayservice-delete.sh) : this script deletes the rayservice speficied.
 - [`./rayservice-status.sh](/Container-Root/ray/rayservice/rayservice-status.sh) : this script allows you to see the status of your rayservice cluster.
 
-
-
-
-### RayServe QuickStart
+### Ray Serve QuickStart
 RayServe Quickstart on Kubernetes can be found [here](https://docs.ray.io/en/latest/serve/production-guide/kubernetes.html)
+
 ### Serve Config V2 Section of RayServe Template
 This section defines the configuration for Ray Serve applications. More details [here](https://docs.ray.io/en/latest/serve/production-guide/config.html). 
 
@@ -169,51 +233,52 @@ This section defines the configuration for Ray Serve applications. More details 
         - **num_cpus**: The number of CPUs allocated for each actor, set to `1`.
 
 
-## Deploy Scripts
+## Deploy scripts
 
 ### Prometheus & Grafana
-A way to monitor Ray Clusters in Kubernetes using Prometheus & Grafana.
+The `aws-do-ray` project provides an example setup to monitor Ray clusters in Kubernetes using Prometheus & Grafana.
 
-This is found in the [`/ray/deploy/prometheus`](/Container-Root/ray/deploy/prometheus/) folder. 
+Action scripts are located in the [`/ray/deploy/prometheus`](/Container-Root/ray/deploy/prometheus/) folder. 
 
-- [`./deploy-prometheus.sh`](/Container-Root/ray/deploy/prometheus/deploy-prometheus.sh) : deploys all prometheus/grafana pods in order to scrape your ray pod metrics and data
-- [`./expose-prometheus.sh`](/Container-Root/ray/deploy/prometheus/expose.sh) port forwards the prometheus/grafana dashbaord. in order to see these tables on your ray dashboard, you must fullow these steps:
-	- Sign in with username: admin, password: prom-operator
-	- Now we import grafana via ‘dashboard_default.json’ (can use another if you want): click “dashboards” → “new” → import → “upload json” from [`ray/deploy/prometheus/kuberay/config/grafana/default_grafana_dashboard.json`](/Container-Root/ray/deploy/prometheus/kuberay/config/grafana/default_grafana_dashboard.json)
-	- Refresh ray dashboard. Now you can see the grafana metrics on the ray dashboard
+- [`./deploy-prometheus.sh`](/Container-Root/ray/deploy/prometheus/deploy-prometheus.sh) : deploys all prometheus/grafana pods in order to scrape your Ray pod metrics
+- [`./expose-prometheus.sh`](/Container-Root/ray/deploy/prometheus/expose.sh) port forwards the prometheus/grafana dashbaord so you can open the UI locally
+In order to see data on your Ray dashboard, please follow these steps:
+	- Sign in with username: `admin`, password: `prom-operator`
+	- Import Grafana dashboard file ‘dashboard_default.json’. Click “dashboards” → “new” → import → “upload json” from [`ray/deploy/prometheus/kuberay/config/grafana/default_grafana_dashboard.json`](/Container-Root/ray/deploy/prometheus/kuberay/config/grafana/default_grafana_dashboard.json)
+	- After reloading the page in your browser, you should be able to see the Grafana metrics on the Ray dashboard
 
 <center><img src="./img/dashboard-prometheus.png" width="80%" /></center> <br/>
 <center>Fig.6 - Ray Dashboard Prometheus & Grafana Metrics</center> <br/>
 
-### Kubectl Secrets
-This is found in the [`/ray/deploy/kubectl-secrets`](/Container-Root/ray/deploy/kubectl-secrets/) folder. 
+### Kubectl secrets
+The [`/ray/deploy/kubectl-secrets`](/Container-Root/ray/deploy/kubectl-secrets/) folder contains the following script:
 
-[`./kubectl-secret-keys.sh`](/Container-Root/ray/deploy/kubectl-secrets/kubectl-secret-keys.sh) : creates a kubectl secret if python code needs access to your AWS credentials. 
+[`./kubectl-secret-keys.sh`](/Container-Root/ray/deploy/kubectl-secrets/kubectl-secret-keys.sh) : creates a kubectl secret for cases when python code needs access to your AWS credentials. 
 
 ### S3 Mountpoint
-This is found in the [`/ray/deploy/s3-mountpoint`](/Container-Root/ray/deploy/s3-mountpoint/) folder. 
+The [`/ray/deploy/s3-mountpoint`](/Container-Root/ray/deploy/s3-mountpoint/) folder contains the following scripts:
 
-[`./deploy.sh`](/Container-Root/ray/deploy/s3-mountpoint/deploy.sh): creates IAM OIDC identity provider for your cluster, creates an IAM policy, creates an IAM role, and installs the mountpoint for Amazon S3 CSI driver. **Please ensure you have either 1/ exported `S3_BUCKET_NAME` and set it to an environment variable 2/ manually replace `$S3_BUCKET_NAME` in the [`./deploy.sh`](/Container-Root/ray/deploy/s3-mountpoint/deploy.sh) script.**
+[`./deploy.sh`](/Container-Root/ray/deploy/s3-mountpoint/deploy.sh): creates an IAM OIDC identity provider for your cluster, creates an IAM policy, creates an IAM role, and installs the mountpoint for Amazon S3 CSI driver. **Please ensure you have either exported `S3_BUCKET_NAME` as an environment variable, or manually replaced `$S3_BUCKET_NAME` in the [`./deploy.sh`](/Container-Root/ray/deploy/s3-mountpoint/deploy.sh) script.**
 
-[`./s3-create.sh`](/Container-Root/ray/deploy/s3-mountpoint/s3-create.sh): creates a PV and a PVC which you can then use to mount to your ray pods within "volumes" section in your raycluster template. 
+[`./s3-create.sh`](/Container-Root/ray/deploy/s3-mountpoint/s3-create.sh): creates a PV and a PVC which you can then use to mount to your ray pods within the "volumes" section in your raycluster template. 
 
 
 ### FSx for Lustre
-This is found in the [`/ray/deploy/fsx`](/Container-Root/ray/deploy/fsx/) folder. 
+Related scripts are found in the [`/ray/deploy/fsx`](/Container-Root/ray/deploy/fsx/) folder. 
 
-Please ensure your "AWS_EKS_CLUSTER" and "AWS_REGION" are set in your .env file. If not, you can manually input these variables within the deploy.sh code. 
+Please ensure your "AWS_EKS_CLUSTER" and "AWS_REGION" are set in your .env file. If not, you can manually set these variables within the deploy.sh code. 
 
-[`./deploy.sh`](/Container-Root/ray/deploy/fsx/deploy.sh): creates IAM OIDC identity provider for your cluster, deploys FSx for Lustre CSI driver, and creates an IAM role bound to the service account used by the driver. 
+[`./deploy.sh`](/Container-Root/ray/deploy/fsx/deploy.sh): creates an IAM OIDC identity provider for your cluster, deploys FSx for Lustre CSI driver, and creates an IAM role bound to the service account used by the driver. 
 
 The [Amazon FSx for Lustre CSI driver](https://github.com/kubernetes-sigs/aws-fsx-csi-driver) presents you with two options for provisioning a file system. 
 
-Dynamic Provisioning: This option leverages Persistent Volume Claims (PVCs) in Kubernetes. You define a PVC with desired storage specifications. The CSI Driver automatically provisions the FSx file system for you based on the PVC request. This allows for easier scaling and eliminates the need to manually create file systems.
+_Dynamic provisioning_: This option leverages Persistent Volume Claims (PVCs) in Kubernetes. You define a PVC with desired storage specifications. The CSI Driver automatically provisions the FSx file system for you based on the PVC request. This allows for easier scaling and eliminates the need to manually create file systems.
 
-Static Provisioning: In this method, you manually create the FSx file system before using the CSI Driver. You'll need to configure details like subnet ID and security groups for the file system. Then, you can use the Driver to mount this pre-created file system within your container as a volume.
+_Static provisioning_: In this method, you manually create the FSx file system before using the CSI Driver. You'll need to configure details like subnet ID and security groups for the file system. Then, you can use the Driver to bing the PV to a PVC and mount this pre-created file system within your container as a volume.
 
 #### Dynamic Provisioning
 
-This is done in [`setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh), but can also be done separately...
+The [`setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script creates a dynamic FSxL volume, but this can also be done independently.
 
 If you would like to use dynamic provisioning, ensure you have your desired configuration in [`dynamic-storageclass.yaml`](/Container-Root/ray/deploy/fsx/dynamic-storageclass.yaml) as well as inputting your "subnetID" and your "securityGroupIds". 
 
@@ -223,21 +288,16 @@ These variables are retrieved once the container is built and set as environment
 
 * securityGroupIds - A list of security group IDs that should be attached to the filesystem. Using the $SECURITY_GROUP environment variable, we are referencing the same security group that was use for EKS or EKS HyperPod cluster creation.
 
-Now, please run [`./dynamic-create.sh`](/Container-Root/ray/deploy/fsx/dynamic-create.sh)
+Once the storage class has been configured, you can run [`./dynamic-create.sh`](/Container-Root/ray/deploy/fsx/dynamic-create.sh) to create an FSxL volume.
 
 
 #### Static Provisioning
 
-If you would like to use static provisioning, ensure you have your volumeHandle: is set with your FSx file system ID, dnsname: is set with your FSx file system DNS name, and your mountname:  is set with your FSx file system mount name in ['static-pv.yaml'](/Container-Root/ray/deploy/fsx/static-pv.yaml), and your fileSystemId: is set with your FSx file system ID, subnetId: is set with your subnet ID, and your securityGroupIds: is set with your security group ID within [`static-storageclass.yaml`](/Container-Root/ray/deploy/fsx/static-storageclass.yaml). 
+If you would like to use static provisioning, ensure you your volumeHandle: is set with your FSx file system ID, dnsname: is set with your FSx file system DNS name, and your mountname: is set with your FSx file system mount name in ['static-pv.yaml'](/Container-Root/ray/deploy/fsx/static-pv.yaml). Also ensure that your fileSystemId: is set with your FSx file system ID, subnetId: is set with your subnet ID, and your securityGroupIds: are set with your security group ID(s) within [`static-storageclass.yaml`](/Container-Root/ray/deploy/fsx/static-storageclass.yaml). 
 
-Now, please run [`./static-create.sh`](/Container-Root/ray/deploy/fsx/static-create.sh). This creates a PV and a PVC which you can then use to mount to your ray pods within "volumes" section in your raycluster template. 
+Running [`./static-create.sh`](/Container-Root/ray/deploy/fsx/static-create.sh) creates a PV and a PVC which you can then use to mount to your Ray pods within the "volumes" section in your raycluster template. 
 
-
-
-
-
-
-## Full Container Command Reference
+## Container command reference
 The project home folder offers a number of additional scripts for management of the aws-do-ray container.
 - [`./config.sh`](./config.sh) – configure aws-do-ray project settings interactively
 - [`./build.sh`](./build.sh) – build aws-do-ray container image
@@ -254,17 +314,18 @@ The project home folder offers a number of additional scripts for management of 
 
 ## Troubleshooting
 * Worker pods can't be scheduled to worker nodes
-	* This can be due to taints and tolerations. Make sure worker node group contains the taints that are specified as tolerations in the ray cluster yaml. Alternatively, you can take out the taints and tolerations all together. 
+	* This can be due to taints present on your nodes or tolerations missing from your pods. Make sure worker node group contains the taints that are specified as tolerations in the ray cluster yaml. Alternatively, you can take out the taints and tolerations all together. 
 
 * Error: You must be logged in to the server (Unauthorized)
-    * Ensure you are connected to the right AWS account, please run [`aws sts get-caller-identity`] in the terminal
-    * Ensure you are connected to the right EKS cluster and region, please run [`aws eks update-kubeconfig --region region-code --name my-cluster`]
+    * Ensure you are connected to the right AWS account, please run `aws sts get-caller-identity` in the terminal to verify your current identity
+    * Ensure you are connected to the right EKS cluster and region, please run `kubectl config current-context` to check the current context and `aws eks update-kubeconfig --region <region-code> --name <my-cluster>` to change the current context if needed.
 
 * EKS API Serve Unauthorized Error (trouble accessing ray cluster from another EC2 instance)
     * [`Create access entry in EKS`](https://repost.aws/knowledge-center/eks-api-server-unauthorized-error)
 
 * [`An error occurred (InvalidClientTokenId) when calling the GetCallerIdentity operation: The security token included in the request is invalid`]
-    * You may need to run [`unset AWS_PROFILE`] to rely on the AWS credentials provided through the environment variables rather than the default profile in ~/.aws/credentials or ~/.aws/config. 
+    * You may need to run [`unset AWS_PROFILE`] to rely on the AWS credentials provided through the environment variables rather than the default profile in ~/.aws/credentials or ~/.aws/config.
+    * You man need to delete ACCESS_TOKEN from your ~/.aws/credentials file if your token has expired
 
 
 ## Security
@@ -284,14 +345,15 @@ This sample code should not be used in production accounts, on production worklo
 * [Docker](https://docker.com)
 * [Kubernetes](https://kubernetes.io)
 * [Amazon Web Services (AWS)](https://aws.amazon.com/)
-* [Amazon EC2 Instance Types](https://aws.amazon.com/ec2/instance-types/)
+* [Amazon EC2 instance types](https://aws.amazon.com/ec2/instance-types/)
 * [Amazon Elastic Kubernetes Service (EKS)](https://aws.amazon.com/eks)
-* [Depend on Docker Project](https://github.com/iankoulski/depend-on-docker)
-* [Ray](https://docs.ray.io/en/latest/ray-overview/index.html)
+* [do-framework](https://bit.ly/do-framework)
+* [Depend on Docker](https://github.com/iankoulski/depend-on-docker)
+* [Ray documentation](https://docs.ray.io/en/latest/ray-overview/index.html)
+* [Ray project](https://github.com/ray-project)
 * [Ray on EKS](https://awslabs.github.io/data-on-eks/docs/blueprints/ai-ml/ray)
-* [Ray Project](https://github.com/ray-project)
-
-
+* [SageMaker HyperPod](https://aws.amazon.com/sagemaker/hyperpod/)
+* [aws-do-hyperpod](https://bit.ly/aws-do-hyperpod)
 
 ## Credits
 * Mark Vinciguerra - @mvincig
