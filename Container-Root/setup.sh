@@ -59,6 +59,9 @@ python -m pip install torchx[kubernetes]
 ./ray/ops/setup/install-krew.sh
 ./ray/ops/setup/install-stern.sh
 
+# Install viu
+./ray/ops/setup/install-viu.sh
+
 # Install sbom utils
 ./ray/ops/setup/install-sbom-utils.sh
 
