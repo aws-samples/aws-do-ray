@@ -85,11 +85,11 @@ spec:
               limits:
                 cpu: 4
                 memory: "16G"
-                  nvidia.com/gpu: 1
+                nvidia.com/gpu: 1
               requests:
                 cpu: 3
                 memory: "12G"
-                  nvidia.com/gpu: 1
+                nvidia.com/gpu: 1
           # Please add the following taints to the GPU node.
           # tolerations:
           #   - key: "ray.io/node-type"
