@@ -19,7 +19,7 @@ MODEL_NAME=$1
 # Convert the model name to lowercase for consistency
 MODEL_NAME=$(echo "$MODEL_NAME" | tr '[:upper:]' '[:lower:]')
 
-CMD="kubectl delete rayservice $MODEL_NAME"
+CMD="kubectl delete -f ${MODEL_NAME}/rayservice.${MODEL_NAME}.yaml"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
 

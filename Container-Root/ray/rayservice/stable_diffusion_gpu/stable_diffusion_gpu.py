@@ -58,3 +58,4 @@ class StableDiffusionV2:
 
 
 entrypoint = APIIngress.bind(StableDiffusionV2.bind())
+
