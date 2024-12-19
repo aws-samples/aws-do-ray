@@ -94,6 +94,9 @@ After the container is started, use the [`./exec.sh`](./exec.sh) script to open 
 Once you have opened the `aws-do-ray` shell you will be dropped in the [`/ray`](/Container-Root/ray/) directory where you will find the [`./setup-dependencies.sh`](/Container-Root/ray/setup-dependencies.sh) script. This deployment creates a `kuberay` namespace and a `kuberay-operator` pod in the kuberay namespace. It will then dynamically provision an FSx for Lustre volume for a shared file system in your Ray cluster. Upon successful deployment, you will have the kuberay operator pod running in the kuberay namespace, and a bound persistent volume claim (PVC) in your current namespace. To check the state of the kuberay-operator pod, use command: `kubectl -n kuberay get pods`, and to check the state of your PVC, please run `kubectl get pvc`.
 
 ### The KubeRay operator
+>[!IMPORTANT]
+>Please note that we advise to use `kuberay-operator` version $\geq$ 1.2.0. In this version the `raycluster_controller` was updated to support automatic eviction of Ray Pods in case of a pod failure (e.g. due to HW failure of the underlying EKS or HyperPod Node). In this case KubeRay will delete the Pod and create new Pods in the next reconciliation if necessary. This is particularly important and useful when deploying your RayCluster onto a SageMaker HyperPod cluster.
+
 The KubeRay Operator gets deployed on the EKS cluster through the `./setup-dependencies.sh` script. KubeRay creates the following Custom Resource Definitions (CRDs): RayCluster, RayService, and RayJobs.
 
 1. RayCluster: primary resource for managing Ray instances on Kubernetes. It represents a cluster of Ray nodes, including a head node and multiple worker nodes. The RayCluster CRD determines how the Ray nodes are set up, how they communicate, and how resources are allocated among them. The nodes in a Ray cluster manifest as pods in the EKS cluster.
