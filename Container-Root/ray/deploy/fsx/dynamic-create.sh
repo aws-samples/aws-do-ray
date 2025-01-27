@@ -40,7 +40,7 @@ echo "Getting Security Group ID"
 SECURITYGROUP_ID_EKS=$(aws eks describe-cluster --name $AWS_EKS_CLUSTER --region $AWS_REGION --query 'cluster.resourcesVpcConfig.clusterSecurityGroupId' --output text)
 if [ "$CLUSTER_TYPE" == "hyperpod" ]; then
     # If CLUSTER is 'hyperpod', get the first security group ID
-    SECURITYGROUP_ID_HYPERPOD=$(aws sagemaker describe-cluster --cluster-name aws-do-hyperpod-eks-smhp --region $AWS_REGION --query 'VpcConfig.SecurityGroupIds' --output text)
+    SECURITYGROUP_ID_HYPERPOD=$(aws sagemaker describe-cluster --cluster-name $AWS_EKS_HYPERPOD_CLUSTER --region $AWS_REGION --query 'VpcConfig.SecurityGroupIds' --output text)
     SECURITYGROUP_ID="$SECURITYGROUP_ID_EKS,$SECURITYGROUP_ID_HYPERPOD"
     aws ec2 authorize-security-group-ingress \
       --group-id $SECURITYGROUP_ID_HYPERPOD \
