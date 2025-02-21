@@ -1,20 +1,3 @@
-import ray
-
-# Initialize Ray with runtime environment
-# ray.init(
-#     runtime_env={
-#         "pip": [
-#             "datasets",
-#             "evaluate",
-#             "transformers>=4.26.0",
-#             "torch>=1.12.0",
-#             "pytorch_lightning>=2.1.0",
-#             "torchvision",
-#             "torch"
-#         ]
-#     }
-# )
-
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
