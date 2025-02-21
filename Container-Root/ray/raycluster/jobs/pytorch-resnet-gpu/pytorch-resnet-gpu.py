@@ -17,22 +17,6 @@
 # print("Use the following command to follow this Job's logs:")
 # print(f"ray job logs '{submission_id}' --address http://127.0.0.1:8265 --follow")
 
-import ray
-
-# Initialize Ray with runtime environment
-ray.init(
-    runtime_env={
-        "pip": [
-            "datasets",
-            "evaluate",
-            "transformers>=4.26.0",
-            "torch>=1.12.0",
-            "pytorch_lightning>=2.1.0",
-            "torchvision",
-            "scikit-learn"
-        ]
-    }
-)
 
 import click
 import time
@@ -48,7 +32,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-
+import ray
 from ray import train
 from ray.train import Checkpoint, RunConfig, ScalingConfig
 from ray.train.torch import TorchTrainer
@@ -70,7 +54,7 @@ def transform_image(
 
 def train_loop_per_worker(config):
     raw_model = resnet18(pretrained=True)
-    model = train.torch.prepare_model(raw_model, move_to_device=True)
+    model = train.torch.prepare_model(raw_model)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
@@ -82,11 +66,8 @@ def train_loop_per_worker(config):
             train_dataset_shard.iter_torch_batches(batch_size=config["batch_size"])
         ):
             # get the inputs; data is a list of [inputs, labels]
-            # inputs = data["image"].to(device=train.torch.get_device())
-            # labels = data["label"].to(device=train.torch.get_device())
-            inputs = data["image"].to(device="cuda")
-            labels = data["label"].to(device="cuda")
-
+            inputs = data["image"].to(device=train.torch.get_device())
+            labels = data["label"].to(device=train.torch.get_device())
             # zero the parameter gradients
             optimizer.zero_grad()
 

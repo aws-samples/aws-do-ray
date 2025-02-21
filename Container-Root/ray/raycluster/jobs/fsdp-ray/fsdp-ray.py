@@ -20,9 +20,7 @@ import pytorch_lightning as pl
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-# from datasets import load_dataset, load_metric
-from datasets import load_dataset
-from evaluate import load as load_metric
+from datasets import load_dataset, load_metric
 import ray.train
 from ray.train.lightning import (
     prepare_trainer,
@@ -167,7 +165,7 @@ def main():
     )
 
     # Schedule four workers for FSDP training (1 GPU/worker by default)
-    scaling_config = ScalingConfig(num_workers=2, use_gpu=True)
+    scaling_config = ScalingConfig(num_workers=1, use_gpu=True)
 
     trainer = TorchTrainer(
         train_loop_per_worker=train_func,

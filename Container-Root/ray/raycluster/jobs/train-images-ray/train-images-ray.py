@@ -11,7 +11,7 @@ import ray
 from ray import air
 from ray.air import session
 from ray.air.config import ScalingConfig
-from ray.train import RunConfig, CheckpointConfig, FailureConfig
+from ray.train import RunConfig, CheckpointConfig
 import ray.train.torch
 from ray.train.torch import TorchTrainer
 from ray.data import Dataset
@@ -464,35 +464,6 @@ def train_loop_per_worker(config):
         print(f"epoch {epoch}: {eval_metric}")
         print(f"epoch {epoch}: eval loss {loss}")
 
-        metrics = {"loss": loss.item(), "accuracy": eval_metric['accuracy']}  # Training/validation metrics.
-
-
-        with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
-
-            checkpoint = None
-
-            if ray.train.get_context().get_world_rank() == 0:
-
-                # # Save the configuration
-                # config.save_pretrained(temp_checkpoint_dir)
-
-                # Save the model weights
-                # torch.save(
-                #     model.state_dict(), os.path.join(temp_checkpoint_dir, "pytorch_model.bin")
-                # )
-
-                model.module.save_pretrained(temp_checkpoint_dir)
-
-                # save configuration file
-                # config.save_pretrained(temp_checkpoint_dir)
-
-                # Build a Ray Train checkpoint from a directory
-                checkpoint = ray.train.Checkpoint.from_directory(temp_checkpoint_dir)
-
-                # Ray Train will automatically save the checkpoint to persistent storage,
-                # so the local `temp_checkpoint_dir` can be safely cleaned up after.
-            ray.train.report(metrics=metrics, checkpoint=checkpoint)
-
 
 
 
@@ -507,6 +478,34 @@ def train_loop_per_worker(config):
     #     with open(os.path.join(args.output_dir, "all_results.json"), "w") as f:
     #         json.dump(all_results, f)
 
+    metrics = {"loss": loss.item(), "accuracy": eval_metric['accuracy']}  # Training/validation metrics.
+
+
+    with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
+
+        checkpoint = None
+
+        if ray.train.get_context().get_world_rank() == 0:
+
+            # # Save the configuration
+            # config.save_pretrained(temp_checkpoint_dir)
+
+            # Save the model weights
+            # torch.save(
+            #     model.state_dict(), os.path.join(temp_checkpoint_dir, "pytorch_model.bin")
+            # )
+
+            model.module.save_pretrained(temp_checkpoint_dir)
+
+            # save configuration file
+            # config.save_pretrained(temp_checkpoint_dir)
+
+            # Build a Ray Train checkpoint from a directory
+            checkpoint = ray.train.Checkpoint.from_directory(temp_checkpoint_dir)
+
+            # Ray Train will automatically save the checkpoint to persistent storage,
+            # so the local `temp_checkpoint_dir` can be safely cleaned up after.
+        ray.train.report(metrics=metrics, checkpoint=checkpoint)
 
     
 
@@ -521,32 +520,25 @@ def main():
     #initialize Ray
     ray.init()
 
-    experiment_path = "/fsx/checkpoints/train-images-ray/"
+    
 
     # run_config = RunConfig(storage_path="s3://eks-ray-bucket/run_configs", name="train_images-ray")
-    run_config = RunConfig(
-        failure_config=FailureConfig(max_failures=-1),
-        checkpoint_config=CheckpointConfig(
-            num_to_keep=1,
-            checkpoint_score_attribute="mean_accuracy",
-            checkpoint_score_order="max",
+    run_config = RunConfig(checkpoint_config=CheckpointConfig(
+        num_to_keep=1,
+        checkpoint_score_attribute="mean_accuracy",
+        checkpoint_score_order="max",
     ),
-        storage_path=experiment_path
+    storage_path="/fsx/run_configs", name="train-images-ray"
     )
 
 
-    
-    if TorchTrainer.can_restore(experiment_path):
-        print("Restoring trainer from previous checkpoint")
-        trainer = TorchTrainer.restore(experiment_path, run_config=run_config)
-    else: 
-        print("No checkpoint found. Starting new training session...")
-        trainer = TorchTrainer(
-            train_loop_per_worker=train_loop_per_worker,
-            # train_loop_config=args.__dict__,
-            train_loop_config={"lr": 1e-3, "batch_size": args.per_device_train_batch_size, "epochs": args.num_train_epochs},
-            scaling_config=ScalingConfig(num_workers=args.num_workers, use_gpu=True, resources_per_worker={"GPU": 1}),
-            run_config=run_config
+
+    trainer = TorchTrainer(
+        train_loop_per_worker=train_loop_per_worker,
+        # train_loop_config=args.__dict__,
+        train_loop_config={"lr": 1e-3, "batch_size": args.per_device_train_batch_size, "epochs": args.num_train_epochs},
+        scaling_config=ScalingConfig(num_workers=args.num_workers, use_gpu=True, resources_per_worker={"GPU": 1}),
+        run_config=run_config
     )
 
     results = trainer.fit()
@@ -567,166 +559,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# import argparse
-# import datetime
-# import json
-# import logging
-# import math
-# from pathlib import Path
-# import time
-
-# # RAY
-# import ray
-# from ray import air
-# from ray.air import session
-# from ray.air.config import ScalingConfig
-# from ray.train import RunConfig, CheckpointConfig, FailureConfig
-# import ray.train.torch
-# from ray.train.torch import TorchTrainer
-# from ray.data import Dataset
-
-# import evaluate
-# import torch
-# from torch.nn.parallel import DistributedDataParallel as DDP
-
-# import os
-# import tempfile
-# import ray.train
-
-# from datasets import load_dataset
-# from datasets import load_from_disk
-# from torch.utils.data import DataLoader
-# from torchvision.transforms import (
-#     CenterCrop,
-#     Compose,
-#     Normalize,
-#     RandomHorizontalFlip,
-#     RandomResizedCrop,
-#     Resize,
-#     ToTensor,
-# )
-# from tqdm.auto import tqdm
-# from transformers import AutoConfig, AutoImageProcessor, AutoModelForImageClassification, SchedulerType, get_scheduler
-
-# from typing import Any
-
-# logging.basicConfig(level=logging.INFO)
-
-# def parse_args():
-#     parser = argparse.ArgumentParser(description="Fine-tune a Transformers model on an image classification dataset")
-#     parser.add_argument("--dataset_name", type=str, default="cifar10")
-#     parser.add_argument("--validation_dir", type=str, default=None)
-#     parser.add_argument("--max_train_samples", type=int, default=None)
-#     parser.add_argument("--max_eval_samples", type=int, default=None)
-#     parser.add_argument("--train_val_split", type=float, default=0.15)
-#     parser.add_argument("--model_name_or_path", type=str, default="google/vit-base-patch16-224-in21k")
-#     parser.add_argument("--per_device_train_batch_size", type=int, default=64)
-#     parser.add_argument("--per_device_eval_batch_size", type=int, default=64)
-#     parser.add_argument("--learning_rate", type=float, default=5e-5)
-#     parser.add_argument("--weight_decay", type=float, default=0.0)
-#     parser.add_argument("--num_train_epochs", type=int, default=3)
-#     parser.add_argument("--max_train_steps", type=int, default=None)
-#     parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
-#     parser.add_argument("--lr_scheduler_type", type=SchedulerType, default="linear")
-#     parser.add_argument("--num_warmup_steps", type=int, default=0)
-#     parser.add_argument("--output_dir", type=str, default="/fsx/models/test4")
-#     parser.add_argument("--seed", type=int, default=None)
-#     parser.add_argument("--checkpointing_steps", type=str, default=None)
-#     parser.add_argument("--resume_from_checkpoint", type=str, default=None)
-#     parser.add_argument("--ignore_mismatched_sizes", action="store_false")
-#     parser.add_argument("--num_workers", type=int, default=2)
-#     parser.add_argument("--num_gpu_per_worker", type=int, default=4)
-#     return parser.parse_args()
-
-# def train_loop_per_worker(config):
-#     args = parse_args()
-#     if args.seed is not None:
-#         torch.manual_seed(args.seed)
-#     dataset = load_dataset(args.dataset_name)
-    
-#     labels = dataset["train"].features["label"].names
-#     label2id = {label: str(i) for i, label in enumerate(labels)}
-#     id2label = {str(i): label for i, label in enumerate(labels)}
-    
-#     config = AutoConfig.from_pretrained(args.model_name_or_path, num_labels=len(labels), id2label=id2label, label2id=label2id)
-#     image_processor = AutoImageProcessor.from_pretrained(args.model_name_or_path)
-#     model = AutoModelForImageClassification.from_pretrained(args.model_name_or_path, config=config, ignore_mismatched_sizes=args.ignore_mismatched_sizes)
-#     model = ray.train.torch.prepare_model(model, parallel_strategy='ddp')
-    
-#     def collate_fn(examples):
-#         pixel_values = torch.stack([example["pixel_values"] for example in examples])
-#         labels = torch.tensor([example["label"] for example in examples])
-#         return {"pixel_values": pixel_values, "labels": labels}
-    
-#     train_dataloader = DataLoader(dataset["train"], batch_size=args.per_device_train_batch_size, collate_fn=collate_fn, num_workers=args.num_workers)
-#     train_dataloader = ray.train.torch.prepare_data_loader(train_dataloader)
-    
-#     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
-#     num_training_steps = args.num_train_epochs * len(train_dataloader)
-#     lr_scheduler = get_scheduler(name=args.lr_scheduler_type, optimizer=optimizer, num_warmup_steps=args.num_warmup_steps, num_training_steps=num_training_steps)
-    
-#     progress_bar = tqdm(range(num_training_steps))
-#     for epoch in range(args.num_train_epochs):
-#         model.train()
-#         for batch in train_dataloader:
-#             outputs = model(**batch)
-#             loss = outputs.loss
-#             loss.backward()
-#             optimizer.step()
-#             lr_scheduler.step()
-#             optimizer.zero_grad()
-#             progress_bar.update(1)
-        
-#         with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
-#             checkpoint = None
-#             if ray.train.get_context().get_world_rank() == 0:
-#                 model.module.save_pretrained(temp_checkpoint_dir)
-#                 checkpoint = ray.train.Checkpoint.from_directory(temp_checkpoint_dir)
-#             ray.train.report(metrics={"loss": loss.item()}, checkpoint=checkpoint)
-
-# def main():
-#     args = parse_args()
-#     ray.init()
-#     experiment_path = "/fsx/checkpoints/train-images-ray/"
-#     run_config = RunConfig(
-#         failure_config=FailureConfig(max_failures=-1),
-#         checkpoint_config=CheckpointConfig(num_to_keep=1, checkpoint_score_attribute="mean_accuracy", checkpoint_score_order="max"),
-#         storage_path=experiment_path
-#     )
-    
-#     if TorchTrainer.can_restore(experiment_path):
-#         print("Restoring trainer from previous checkpoint")
-#         trainer = TorchTrainer.restore(experiment_path, run_config=run_config)
-#     else:
-#         print("No checkpoint found. Starting new training session...")
-#         trainer = TorchTrainer(
-#             train_loop_per_worker=train_loop_per_worker,
-#             train_loop_config={"lr": 1e-3, "batch_size": args.per_device_train_batch_size, "epochs": args.num_train_epochs},
-#             scaling_config=ScalingConfig(num_workers=args.num_workers, use_gpu=True, resources_per_worker={"GPU": 1}),
-#             run_config=run_config
-#         )
-#     results = trainer.fit()
-#     print(f"Training Time: {time.time() - start_time} seconds")
-#     print(f"Results: {results}")
-#     ray.shutdown()
-
-# if __name__ == "__main__":
-#     main()
