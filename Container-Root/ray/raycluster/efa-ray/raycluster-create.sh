@@ -2,7 +2,7 @@
 
 source create-container.sh
 # Apply the Kubernetes configuration
-CMD="envsubst < /aws-do-ray/Container-Root/ray/raycluster/raycluster-template.yaml | kubectl apply -f -"
+CMD="envsubst < /aws-do-ray/Container-Root/ray/raycluster/efa-ray/raycluster-template-efa.yaml | kubectl apply -f -"
 
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
@@ -14,4 +14,3 @@ else
     echo "Error deploying cluster."
     exit 3
 fi
-

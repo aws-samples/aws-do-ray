@@ -15,15 +15,15 @@ spec:
     #pod template
     template:
       spec:
-        #nodeSelector:
-        # node.kubernetes.io/instance-type: "ml.m5.2xlarge"
+        #        nodeSelector:  
+        #node.kubernetes.io/instance-type: "ml.m5.2xlarge"
         securityContext:
           runAsUser: 0
           runAsGroup: 0
           fsGroup: 0
         containers:
         - name: ray-head
-          image: rayproject/ray-ml:latest     ## IMAGE: Here you may choose which image your head pod will run
+          image: ${REGISTRY}aws-ray-custom:latest     ## IMAGE: Here you may choose which image your head pod will run
           env:                                ## ENV: Here is where you can send stuff to the head pod
             - name: RAY_GRAFANA_IFRAME_HOST   ## PROMETHEUS AND GRAFANA
               value: http://localhost:3000
@@ -102,7 +102,8 @@ spec:
           fsGroup: 0
         containers:
         - name: ray-worker
-          image: rayproject/ray-ml:latest             ## IMAGE: Here you may choose which image your head node will run
+          image: ${REGISTRY}aws-ray-custom:latest             ## IMAGE: Here you may choose which image your head node will run
+          env:
           lifecycle:
             preStop:
               exec:

@@ -1,18 +1,37 @@
 import ray
+import time
 
-# Initialize Ray with runtime environment
-ray.init(
-    runtime_env={
-        "pip": [
-            "datasets",
-            "evaluate",
-            "transformers>=4.26.0",
-            "torch>=1.12.0",
-            "pytorch_lightning>=2.1.0",
-        ]
-    }
-)
+ #Initialize Ray with runtime environment
+# ray.init(
+#     runtime_env={
+#         "pip": [
+#             "datasets",
+#             "evaluate",
+#             "transformers>=4.26.0",
+#             "torch",
+#             "pytorch_lightning>=2.1.0",
+#             "torchvision",
+#             "torchaudio",
+#             "numpy",
+#             "datasets",
+#             "tqdm",
+#             "click",
+#             "torchdata",
+#             "torchmetrics",
+#             "torch_optimizer",
+#             "accelerate",
+#             "scikit-learn",
+#             "Pillow==9.5.0",
+#             "protobuf==3.20.3"
+#         ]
+#     }
+# )
+ray.init()
 
+# Wait for runtime env to be setup
+#time.sleep(10)
+
+# ray.init()
 
 import torch
 import numpy as np
@@ -20,7 +39,9 @@ import pytorch_lightning as pl
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from datasets import load_dataset, load_metric
+# from datasets import load_dataset, load_metric
+from datasets import load_dataset
+from evaluate import load as load_metric
 import ray.train
 from ray.train.lightning import (
     prepare_trainer,
@@ -100,10 +121,14 @@ class SentimentModel(pl.LightningModule):
 
 # Train Function
 def train_func(config):
+    # get world size
+    world_size = ray.train.get_context().get_world_size()
+
     # Unpack the input configs passed from `TorchTrainer(train_loop_config)`
     lr = config["lr"]
     eps = config["eps"]
-    batch_size = config["batch_size"]
+    global_batch_size = config["batch_size"]
+    per_gpu_batch_size = global_batch_size // world_size
     max_epochs = config["max_epochs"]
 
     # Fetch the Dataset shards
@@ -111,8 +136,8 @@ def train_func(config):
     val_ds = ray.train.get_dataset_shard("validation")
 
     # Create a dataloader for Ray Datasets
-    train_ds_loader = train_ds.iter_torch_batches(batch_size=batch_size)
-    val_ds_loader = val_ds.iter_torch_batches(batch_size=batch_size)
+    train_ds_loader = train_ds.iter_torch_batches(batch_size=per_gpu_batch_size)
+    val_ds_loader = val_ds.iter_torch_batches(batch_size=per_gpu_batch_size)
 
     # Model
     model = SentimentModel(lr=lr, eps=eps)
@@ -121,7 +146,9 @@ def train_func(config):
         max_epochs=max_epochs,
         accelerator="auto",
         devices="auto",
-        strategy=RayFSDPStrategy(),
+        strategy=RayFSDPStrategy(
+            process_group_backend="nccl",
+        ),
         plugins=[RayLightningEnvironment()],
         callbacks=[RayTrainReportCallback()],
         enable_progress_bar=False,
@@ -136,7 +163,7 @@ def train_func(config):
 def main():
 
     # Load Dataset
-    dataset = load_dataset("glue", "cola")
+    dataset = load_dataset('glue', 'cola', download_mode='force_redownload')
     train_dataset = ray.data.from_huggingface(dataset["train"])
     validation_dataset = ray.data.from_huggingface(dataset["validation"])
 
@@ -148,7 +175,7 @@ def main():
     train_func_config = {
     "lr": 1e-5,
     "eps": 1e-8,
-    "batch_size": 16,
+    "batch_size": 256,
     "max_epochs": 5,
     }
 
@@ -165,7 +192,11 @@ def main():
     )
 
     # Schedule four workers for FSDP training (1 GPU/worker by default)
-    scaling_config = ScalingConfig(num_workers=1, use_gpu=True)
+    scaling_config = ScalingConfig(
+        num_workers=2,
+        use_gpu=True,
+        resources_per_worker={"GPU": 1, "CPU": 3}
+    )
 
     trainer = TorchTrainer(
         train_loop_per_worker=train_func,

@@ -132,7 +132,12 @@ Additional information about your distributed training jobs.
 
 
 ## Create a RayCluster
+>[!IMPORTANT]
+>Please note that the `rayproject/ray-ml` container images are [deprecated](https://github.com/ray-project/ray/issues/46378). Therefore, we will build on top of the `rayproject/ray:2.42.1-py310-gpu` image, which has all ray dependencies, and include our training dependencies with our own custom image. Please feel free to modify this Dockerfile as you wish, but not necessary. 
+
+
 Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/raycluster`](/Container-Root/ray/raycluster/) directory. This directory contains the following scripts:
+- [`./create-container.sh`](/Container-Root/ray/raycluster/create-container.sh) : this script will build and then push the [`Dockerfile`](/Container-Root/ray/raycluster/Dockerfile) to your ECR. This image will have all ray dependencies, as well as your training library dependencies. Your Ray pods will host this image. This command may take 10-15 minutes. 
 - [`./raycluster-create.sh`](/Container-Root/ray/raycluster/raycluster-create.sh) : this script creates the ray cluster specified in the [`raycluster-template.yaml`](/Container-Root/ray/raycluster/raycluster-template.yaml) file. 
 - [`./raycluster-delete.sh`](/Container-Root/ray/raycluster/delete-cluster.sh) : this script deletes the ray cluster specified in the [`raycluster-template.yaml`](/Container-Root/ray/raycluster/raycluster-template.yaml) file. 
 - [`./raycluster-pods.sh`](/Container-Root/ray/raycluster/raycluster-pods.sh) : this script allows you to see your currently running pods(or nodes) of your raycluster.
@@ -145,6 +150,8 @@ Within the [`/ray`](/Container-Root/ray/) directory, you will find the [`/rayclu
 	- If your script is in the [`/jobs`](/Container-Root/ray/raycluster/jobs/) folder, it will submit the ray job via the ray job submission SDK (dashboard must be exposed via [`re`](/Container-Root/ray/ops/ray-expose.sh)) or it will submit directly through the head pod. Just run `./job-submit.sh <script name>`. Ex/ `./job-submit.sh dt-pytorch`.
 	- If your script is in a file system that is attached to your ray pods, it you must specify the directory that the script is in relative to your head pod. Run `./job-submit.sh <script name> <directory>`. Ex/ `./job-submit.sh dt-pytorch fsx/code/dt-pytorch` where my dt-pytorch.py file is located in directory fsx/code/dt-pytorch. 
 
+> Side Note: we have the [`efa-ray/`](/Container-Root/ray/raycluster/jobs/) folder which has the same scripts to set up your Ray cluster with EFA enabled using the [`public.ecr.aws/hpc-cloud/nccl-tests:latest`](https://github.com/aws-samples/awsome-distributed-training/blob/main/micro-benchmarks/nccl-tests/nccl-tests.Dockerfile) image as the base image, and adding ray dependencies on top of it. If you want EFA enabled training, please feel free to use this container image for your Ray Cluster. Please be aware that EFA environment variables may differ for different cluster types. Please learn more [here](https://github.com/aws-samples/awsome-distributed-training/blob/main/1.architectures/efa-cheatsheet.md)
+
 ### RayCluster template
 For everything you need to know about the details of a RayCluster configuration, please refer to the comments in the template, as well as this [doc](https://docs.ray.io/en/latest/cluster/kubernetes/user-guides/config.html). But as a quick reference, here are the main concepts in the template:
 * metadata: name: 
@@ -156,7 +163,7 @@ For everything you need to know about the details of a RayCluster configuration,
 * containers: resources: limits/requests:
     * These fields are under both headGroupSpec and workerGroupSpecs and these values set resource limits and requests for your pods. Please confirm your node resource capabilities before setting these values.
 * containers: image: 
-    * This is the container image each pod runs. It is best practice that the head pod and worker pods use the same container image, ex/ "rayproject/ray-ml:latest"
+    * This is the container image each pod runs. It is best practice that the head pod and worker pods use the same container image, ex/ "rayproject/ray:latest"
 * containers: env: name: (AWS KEYS)
     * After deploying your kubectl secrets by running [`./deploy/kubectl-secrets/kubectl-secret-keys.sh`](./Container-Root/ray/deploy/kubectl-secrets/kubectl-secret-keys.sh) your Ray pods will now have IAM permissions to access other buckets/filesystems/etc. If this is needed, please uncomment this section out in the template. 
 * volumeMounts and volumes under headGroupSpec and workerGroupSpecs

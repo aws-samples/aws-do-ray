@@ -1,44 +1,10 @@
-apiVersion: ray.io/v1
+apiVersion: ray.io/v1alpha1
 kind: RayCluster
 metadata:
-  name: raycluster-autoscaler
+  name: rayml-efa
   labels:
     controller-tools.k8s.io: "1.0"
 spec:
-  # The version of Ray you are using. Make sure all Ray containers are running this version of Ray.
-  rayVersion: '2.9.0'
-  # If `enableInTreeAutoscaling` is true, the Autoscaler sidecar will be added to the Ray head pod.
-  # Ray Autoscaler integration is Beta with KubeRay >= 0.3.0 and Ray >= 2.0.0.
-  enableInTreeAutoscaling: true
-  # `autoscalerOptions` is an OPTIONAL field specifying configuration overrides for the Ray Autoscaler.
-  # The example configuration shown below represents the DEFAULT values.
-  # (You may delete autoscalerOptions if the defaults are suitable.)
-  autoscalerOptions:
-    # `upscalingMode` is "Default" or "Aggressive."
-    # Conservative: Upscaling is rate-limited; the number of pending worker pods is at most the size of the Ray cluster.
-    # Default: Upscaling is not rate-limited.
-    # Aggressive: An alias for Default; upscaling is not rate-limited.
-    upscalingMode: Default
-    # `idleTimeoutSeconds` is the number of seconds to wait before scaling down a worker pod which is not using Ray resources.
-    idleTimeoutSeconds: 60
-    # `image` optionally overrides the Autoscaler's container image. The Autoscaler uses the same image as the Ray container by default.
-    ## image: "my-repo/my-custom-autoscaler-image:tag"
-    # `imagePullPolicy` optionally overrides the Autoscaler container's default image pull policy (IfNotPresent).
-    imagePullPolicy: IfNotPresent
-    # Optionally specify the Autoscaler container's securityContext.
-    securityContext: {}
-    env: []
-    envFrom: []
-    # resources specifies optional resource request and limit overrides for the Autoscaler container.
-    # The default Autoscaler resource limits and requests should be sufficient for production use-cases.
-    # However, for large Ray clusters, we recommend monitoring container resource usage to determine if overriding the defaults is required.
-    resources:
-      limits:
-        cpu: "500m"
-        memory: "512Mi"
-      requests:
-        cpu: "500m"
-        memory: "512Mi"
   # Ray head pod template
   headGroupSpec:
     # The `rayStartParams` are used to configure the `ray start` command.
@@ -49,15 +15,15 @@ spec:
     #pod template
     template:
       spec:
-        #nodeSelector:
-         #node.kubernetes.io/instance-type: "ml.m5.2xlarge"
+        nodeSelector:
+         node.kubernetes.io/instance-type: "ml.m5.2xlarge"
         securityContext:
           runAsUser: 0
           runAsGroup: 0
           fsGroup: 0
         containers:
         - name: ray-head
-          image: ${REGISTRY}aws-ray-custom:latest     ## IMAGE: Here you may choose which image your head pod will run
+          image: ${REGISTRY}ray-efa-nccl:latest     ## IMAGE: Here you may choose which image your head pod will run
           env:                                ## ENV: Here is where you can send stuff to the head pod
             - name: RAY_GRAFANA_IFRAME_HOST   ## PROMETHEUS AND GRAFANA
               value: http://localhost:3000
@@ -65,6 +31,16 @@ spec:
               value: http://prometheus-grafana.prometheus-system.svc:80
             - name: RAY_PROMETHEUS_HOST
               value: http://prometheus-kube-prometheus-prometheus.prometheus-system.svc:9090
+                #- name: FI_EFA_USE_DEVICE_RDMA
+                #value: "1"
+            - name: FI_PROVIDER
+              value: "efa"
+            - name: NCCL_DEBUG
+              value: "INFO"
+            - name: FI_LOG_LEVEL
+              value: "warn"
+            - name: NCCL_SOCKET_IFNAME
+              value: "eth0"
             # - name: AWS_ACCESS_KEY_ID       ## after running ./deploy/kubectl-secrets/kubectl-secret-keys.sh
             #   valueFrom:                    ## if you need your code to access other private S3 buckets
             #     secretKeyRef:
@@ -87,10 +63,10 @@ spec:
           resources:
             limits:                                    ## LIMITS: Set resource limits for your head pod
               cpu: 1
-              memory: 8Gi
+              memory: 16Gi
             requests:                                    ## REQUESTS: Set resource requests for your head pod
               cpu: 1
-              memory: 8Gi
+              memory: 16Gi
           ports:
           - containerPort: 6379
             name: gcs-server
@@ -101,8 +77,8 @@ spec:
           - containerPort: 8000
             name: serve
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head pod
-          - name: s3-storage
-            mountPath: /s3
+          # - name: s3-storage
+          #   mountPath: /s3
           - name: fsx-storage
             mountPath: /fsx
           - name: ray-logs
@@ -110,15 +86,15 @@ spec:
         volumes:
           - name: ray-logs
             emptyDir: {}
-          - name: s3-storage
-            persistentVolumeClaim:
-              claimName: s3-claim
+          # - name: s3-storage
+          #   persistentVolumeClaim:
+          #     claimName: s3-claim
           - name: fsx-storage
             persistentVolumeClaim:
               claimName: fsx-claim
   workerGroupSpecs:
   # the pod replicas in this group typed worker
-  - replicas: 4                                    ## REPLICAS: How many worker pods you want 
+  - replicas: 2                                    ## REPLICAS: How many worker pods you want 
     minReplicas: 1
     maxReplicas: 10
     # logical group name, for this called small-group, also can be functional
@@ -136,7 +112,18 @@ spec:
           fsGroup: 0
         containers:
         - name: ray-worker
-          image: ${REGISTRY}aws-ray-custom:latest             ## IMAGE: Here you may choose which image your head node will run
+          image: ${REGISTRY}ray-efa-nccl:latest             ## IMAGE: Here you may choose which image your head node will run
+          env:
+            #  - name: FI_EFA_USE_DEVICE_RDMA
+            # value: "1"
+            - name: FI_PROVIDER
+              value: "efa"
+            - name: NCCL_DEBUG
+              value: "INFO"
+            - name: FI_LOG_LEVEL
+              value: "warn"
+            - name: NCCL_SOCKET_IFNAME
+              value: "eth0"
           lifecycle:
             preStop:
               exec:
@@ -144,15 +131,17 @@ spec:
           resources:
             limits:                                    ## LIMITS: Set resource limits for your worker pods
               cpu: 4
-              memory: 24Gi
+                #memory: 84Gi
               nvidia.com/gpu: 1
+              vpc.amazonaws.com/efa: 1
             requests:                                    ## REQUESTS: Set resource requests for your worker pods
               cpu: 4
-              memory: 24Gi
+                #memory: 84Gi
               nvidia.com/gpu: 1
+              vpc.amazonaws.com/efa: 1
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker pods
-          - name: s3-storage
-            mountPath: /s3
+          # - name: s3-storage
+          #   mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
           - name: fsx-storage
@@ -164,9 +153,9 @@ spec:
         #     value: "worker"
         #     effect: "NoSchedule"
         volumes:
-        - name: s3-storage
-          persistentVolumeClaim:
-            claimName: s3-claim
+        # - name: s3-storage
+        #   persistentVolumeClaim:
+        #     claimName: s3-claim
         - name: fsx-storage
           persistentVolumeClaim:
             claimName: fsx-claim
@@ -193,3 +182,4 @@ spec:
 #      ray.io/node-type: worker
 #  podMetricsEndpoints:
 #  - port: metrics
+

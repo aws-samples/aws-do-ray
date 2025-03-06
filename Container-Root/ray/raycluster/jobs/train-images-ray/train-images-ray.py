@@ -11,7 +11,7 @@ import ray
 from ray import air
 from ray.air import session
 from ray.air.config import ScalingConfig
-from ray.train import RunConfig, CheckpointConfig
+from ray.train import RunConfig, CheckpointConfig, FailureConfig
 import ray.train.torch
 from ray.train.torch import TorchTrainer
 from ray.data import Dataset
@@ -107,13 +107,13 @@ def parse_args():
     parser.add_argument(
         "--per_device_train_batch_size",
         type=int,
-        default=64,
+        default=32,
         help="Batch size (per device) for the training dataloader.",
     )
     parser.add_argument(
         "--per_device_eval_batch_size",
         type=int,
-        default=64,
+        default=32,
         help="Batch size (per device) for the evaluation dataloader.",
     )
     parser.add_argument(
@@ -178,7 +178,7 @@ def parse_args():
     parser.add_argument(
         "--num_gpu_per_worker",
         type=int,
-        default=4,
+        default=1,
         help="Number of GPUs you want each worker to have"
     )
 
@@ -306,7 +306,7 @@ def train_loop_per_worker(config):
         shuffle=True,
         collate_fn=collate_fn,
         batch_size=args.per_device_train_batch_size,
-        num_workers=48
+        num_workers=24
         # num_workers=args.num_workers
     )
     train_dataloader = ray.train.torch.prepare_data_loader(train_dataloader)
@@ -320,7 +320,7 @@ def train_loop_per_worker(config):
         collate_fn=collate_fn,
         batch_size=args.per_device_eval_batch_size,
         shuffle=True,
-        num_workers=48
+        num_workers=24
         # num_workers=args.num_workers
     )
     eval_dataloader = ray.train.torch.prepare_data_loader(eval_dataloader)
@@ -464,6 +464,35 @@ def train_loop_per_worker(config):
         print(f"epoch {epoch}: {eval_metric}")
         print(f"epoch {epoch}: eval loss {loss}")
 
+        metrics = {"loss": loss.item(), "accuracy": eval_metric['accuracy']}  # Training/validation metrics.
+
+
+        with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
+
+            checkpoint = None
+
+            if ray.train.get_context().get_world_rank() == 0:
+
+                # # Save the configuration
+                # config.save_pretrained(temp_checkpoint_dir)
+
+                # Save the model weights
+                # torch.save(
+                #     model.state_dict(), os.path.join(temp_checkpoint_dir, "pytorch_model.bin")
+                # )
+
+                model.module.save_pretrained(temp_checkpoint_dir)
+
+                # save configuration file
+                # config.save_pretrained(temp_checkpoint_dir)
+
+                # Build a Ray Train checkpoint from a directory
+                checkpoint = ray.train.Checkpoint.from_directory(temp_checkpoint_dir)
+
+                # Ray Train will automatically save the checkpoint to persistent storage,
+                # so the local `temp_checkpoint_dir` can be safely cleaned up after.
+            ray.train.report(metrics=metrics, checkpoint=checkpoint)
+
 
 
 
@@ -478,34 +507,6 @@ def train_loop_per_worker(config):
     #     with open(os.path.join(args.output_dir, "all_results.json"), "w") as f:
     #         json.dump(all_results, f)
 
-    metrics = {"loss": loss.item(), "accuracy": eval_metric['accuracy']}  # Training/validation metrics.
-
-
-    with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
-
-        checkpoint = None
-
-        if ray.train.get_context().get_world_rank() == 0:
-
-            # # Save the configuration
-            # config.save_pretrained(temp_checkpoint_dir)
-
-            # Save the model weights
-            # torch.save(
-            #     model.state_dict(), os.path.join(temp_checkpoint_dir, "pytorch_model.bin")
-            # )
-
-            model.module.save_pretrained(temp_checkpoint_dir)
-
-            # save configuration file
-            # config.save_pretrained(temp_checkpoint_dir)
-
-            # Build a Ray Train checkpoint from a directory
-            checkpoint = ray.train.Checkpoint.from_directory(temp_checkpoint_dir)
-
-            # Ray Train will automatically save the checkpoint to persistent storage,
-            # so the local `temp_checkpoint_dir` can be safely cleaned up after.
-        ray.train.report(metrics=metrics, checkpoint=checkpoint)
 
     
 
@@ -520,25 +521,32 @@ def main():
     #initialize Ray
     ray.init()
 
-    
+    experiment_path = "/fsx/checkpoints/train-images-ray/"
 
     # run_config = RunConfig(storage_path="s3://eks-ray-bucket/run_configs", name="train_images-ray")
-    run_config = RunConfig(checkpoint_config=CheckpointConfig(
-        num_to_keep=1,
-        checkpoint_score_attribute="mean_accuracy",
-        checkpoint_score_order="max",
+    run_config = RunConfig(
+        failure_config=FailureConfig(max_failures=-1),
+        checkpoint_config=CheckpointConfig(
+            num_to_keep=1,
+            checkpoint_score_attribute="mean_accuracy",
+            checkpoint_score_order="max",
     ),
-    storage_path="/fsx/run_configs", name="train-images-ray"
+        storage_path=experiment_path
     )
 
 
-
-    trainer = TorchTrainer(
-        train_loop_per_worker=train_loop_per_worker,
-        # train_loop_config=args.__dict__,
-        train_loop_config={"lr": 1e-3, "batch_size": args.per_device_train_batch_size, "epochs": args.num_train_epochs},
-        scaling_config=ScalingConfig(num_workers=args.num_workers, use_gpu=True, resources_per_worker={"GPU": 1}),
-        run_config=run_config
+    
+    if TorchTrainer.can_restore(experiment_path):
+        print("Restoring trainer from previous checkpoint")
+        trainer = TorchTrainer.restore(experiment_path, run_config=run_config)
+    else: 
+        print("No checkpoint found. Starting new training session...")
+        trainer = TorchTrainer(
+            train_loop_per_worker=train_loop_per_worker,
+            # train_loop_config=args.__dict__,
+            train_loop_config={"lr": 1e-3, "batch_size": args.per_device_train_batch_size, "epochs": args.num_train_epochs},
+            scaling_config=ScalingConfig(num_workers=args.num_workers, use_gpu=True, resources_per_worker={"GPU": 1}),
+            run_config=run_config
     )
 
     results = trainer.fit()
@@ -559,3 +567,16 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
