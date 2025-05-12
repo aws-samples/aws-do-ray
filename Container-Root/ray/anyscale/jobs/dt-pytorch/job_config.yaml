@@ -1,0 +1,12 @@
+name: dt-pytorch-job
+#image_uri: 'anyscale/image/image-for-job-fsdp-job:1'
+compute_config: 'g5-config:1'
+working_dir: ./
+env_vars:
+  AWS_ACCESS_KEY_ID: 
+  AWS_SECRET_ACCESS_KEY: 
+  AWS_DEFAULT_REGION: 
+  NCCL_DEBUG: INFO
+cloud: 
+entrypoint: python dt-pytorch.py
+max_retries: -1

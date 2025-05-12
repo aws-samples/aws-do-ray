@@ -1,0 +1,20 @@
+cloud: mvincig
+head_node:
+  instance_type: 2CPU-8GB
+  resources:
+    CPU: 0
+    GPU: 0
+  flags: {}
+worker_nodes:
+  - instance_type: 2CPU-8GB
+    resources:
+      CPU: 4
+      GPU: 1
+    flags: {}
+    name: 2CPU-8GB
+    min_nodes: 1
+    max_nodes: 3
+    market_type: ON_DEMAND
+enable_cross_zone_scaling: false
+flags:
+  allow-cross-zone-autoscaling: false
