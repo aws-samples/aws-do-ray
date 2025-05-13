@@ -17,7 +17,7 @@ torchmetrics
 torch_optimizer
 accelerate
 scikit-learn
-Pillow==9.5.0
+Pillow==10.3.0
 protobuf==3.20.3
 datasets
 transformers
