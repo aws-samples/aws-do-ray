@@ -2,7 +2,6 @@
  
 # Common environment variables
 export AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]') #AWS Region
-#export AWS_EKS_HYPERPOD_CLUSTER="$(/ray/ops/hyperpod-name.sh)" #HyperPod cluster name
 export AWS_EKS_HYPERPOD_CLUSTER=""
 export AWS_AZ="" #AWS Availability Zone HyperPod cluster is deployed in, ex/ us-west-2a
 export CLOUD_NAME="" #Anyscale Cloud name - name whatever you'd like
