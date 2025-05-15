@@ -4,13 +4,13 @@ source ./env_vars
 
 # Function to get cloud deployment ID from cloud name
 get_cloud_deployment_id() {
-    local CLOUD_NAME=$1
+    local ANYSCALE_CLOUD_NAME=$1
     local CLOUD_INFO
     local DEPLOYMENT_ID
 
-    CLOUD_INFO=$(anyscale cloud config get --name "$CLOUD_NAME")
+    CLOUD_INFO=$(anyscale cloud config get --name "$ANYSCALE_CLOUD_NAME")
     if [ $? -ne 0 ]; then
-        echo "Error getting cloud configuration for $CLOUD_NAME"
+        echo "Error getting cloud configuration for $ANYSCALE_CLOUD_NAME"
         exit 1
     fi
 
@@ -24,8 +24,8 @@ get_cloud_deployment_id() {
 }
 
 
-echo "Getting cloud deployment ID for: $CLOUD_NAME"
-CLOUD_DEPLOYMENT_ID=$(get_cloud_deployment_id "$CLOUD_NAME")
+echo "Getting cloud deployment ID for: $ANYSCALE_CLOUD_NAME"
+CLOUD_DEPLOYMENT_ID=$(get_cloud_deployment_id "$ANYSCALE_CLOUD_NAME")
 echo "Cloud Deployment ID: $CLOUD_DEPLOYMENT_ID"
 
 # Deploy Anyscale operator

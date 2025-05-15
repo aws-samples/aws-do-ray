@@ -1,14 +1,19 @@
 #!/bin/bash
  
 # Common environment variables
+export AWS_EKS_HYPERPOD_CLUSTER="ml-cluster" # Fill this in - Name of Sagemaker Hyperpod cluster
+
 export AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]') #AWS Region
-export AWS_EKS_HYPERPOD_CLUSTER=""
-export AWS_AZ="" #AWS Availability Zone HyperPod cluster is deployed in, ex/ us-west-2a
-export CLOUD_NAME="" #Anyscale Cloud name - name whatever you'd like
-export EFS_NAME="efs-anyscale" #EFS Name - name whatever you'd like
+
+export AWS_AZ=$(aws sagemaker describe-cluster --cluster-name ${AWS_EKS_HYPERPOD_CLUSTER} --query 'VpcConfig.Subnets[0]' --output text | xargs -I {} aws ec2 describe-subnets --subnet-ids {} --query 'Subnets[0].AvailabilityZone' --output text) # Availability Zone ex/ us-west-2a
+
+export ANYSCALE_CLOUD_NAME="anyscale-cloud" # Modify this field to change name for Anyscale cloud
+
+export EFS_NAME="efs-anyscale" # Modify this field to change name for Anyscale cloud
 
 # EFS Configuration
 export PERFORMANCE_MODE="generalPurpose"
+
 export THROUGHPUT_MODE="bursting"
 
 # Kubernetes Configuration

@@ -2,12 +2,12 @@
 
 source ./env_vars
 
-if [ -z "$CLOUD_NAME" ]; then
+if [ -z "$ANYSCALE_CLOUD_NAME" ]; then
     echo "Anyscale Cloud name cannot be empty"
     exit 1
 fi
 
-echo "Registering Anyscale cloud: $CLOUD_NAME"
+echo "Registering Anyscale cloud: $ANYSCALE_CLOUD_NAME"
 echo "-------------------------"
 
 
@@ -50,7 +50,7 @@ else
 fi
 
 anyscale cloud register \
-  --name ${CLOUD_NAME} \
+  --name ${ANYSCALE_CLOUD_NAME} \
   --provider aws \
   --region ${AWS_REGION} \
   --compute-stack k8s \
@@ -59,5 +59,5 @@ anyscale cloud register \
   --cloud-storage-bucket-name ${S3_BUCKET} \
   --file-storage-id ${EFS_ID}
 
-echo consent | anyscale cloud config update ${CLOUD_NAME} \
+echo consent | anyscale cloud config update ${ANYSCALE_CLOUD_NAME} \
   --enable-log-ingestion

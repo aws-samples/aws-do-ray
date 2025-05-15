@@ -1,4 +1,4 @@
-cloud: mvincig
+cloud: ${ANYSCALE_CLOUD_NAME}
 head_node:
   instance_type: 2CPU-8GB
   resources:
