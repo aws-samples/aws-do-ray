@@ -1,3 +1,3 @@
 #!/bin/bash
 
-anyscale job submit --config-file job_config.yaml -r requirements.txt
+anyscale job submit -f job_config.yaml
