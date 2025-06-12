@@ -14,8 +14,14 @@ echo "-------------------------"
 # Get the PVC name and associated PV name
 echo "Retrieving Elastic File System..."
 
-echo "Please enter EFS ID: "
-read EFS_ID
+if [ -f ./efs_env.sh ]; then
+    source ./efs_env.sh
+    echo "Using EFS_ID from env file: $EFS_ID"
+else
+    echo "EFS_ID not found. Please enter EFS ID:"
+    read EFS_ID
+    exit 1
+fi
 
 if [ -z "$EFS_ID" ]; then
     echo "Could not find EFS file system ID"

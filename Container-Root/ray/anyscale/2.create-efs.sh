@@ -74,6 +74,8 @@ aws efs create-mount-target \
 
 echo "Mount target created for EFS $EFS_ID"
 
+echo "export EFS_ID=$EFS_ID" > ./efs_env.sh
+
 # ==== Output File System Info ====
 echo ""
 echo "EFS File System Details:"
