@@ -15,8 +15,8 @@ spec:
     #pod template
     template:
       spec:
-        #        nodeSelector:  
-        #node.kubernetes.io/instance-type: "ml.m5.2xlarge"
+        #nodeSelector:  
+          #node.kubernetes.io/instance-type: "ml.m5.2xlarge"
         securityContext:
           runAsUser: 0
           runAsGroup: 0
@@ -31,21 +31,6 @@ spec:
               value: http://prometheus-grafana.prometheus-system.svc:80
             - name: RAY_PROMETHEUS_HOST
               value: http://prometheus-kube-prometheus-prometheus.prometheus-system.svc:9090
-            # - name: AWS_ACCESS_KEY_ID       ## after running ./deploy/kubectl-secrets/kubectl-secret-keys.sh
-            #   valueFrom:                    ## if you need your code to access other private S3 buckets
-            #     secretKeyRef:
-            #       name: aws-creds
-            #       key: AWS_ACCESS_KEY_ID
-            # - name: AWS_SECRET_ACCESS_KEY
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: aws-creds
-            #       key: AWS_SECRET_ACCESS_KEY
-            # - name: AWS_SESSION_TOKEN
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: aws-creds
-            #       key: AWS_SESSION_TOKEN
           lifecycle:
             preStop:
               exec:
@@ -66,9 +51,7 @@ spec:
             name: client
           - containerPort: 8000
             name: serve
-          volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to head pod
-          # - name: s3-storage
-          #   mountPath: /s3
+          volumeMounts:                             
           - name: fsx-storage
             mountPath: /fsx
           - name: ray-logs
@@ -76,15 +59,12 @@ spec:
         volumes:
           - name: ray-logs
             emptyDir: {}
-          # - name: s3-storage
-          #   persistentVolumeClaim:
-          #     claimName: s3-claim
           - name: fsx-storage
             persistentVolumeClaim:
               claimName: fsx-claim
   workerGroupSpecs:
   # the pod replicas in this group typed worker
-  - replicas: 2                                    ## REPLICAS: How many worker pods you want 
+  - replicas: 4                                    ## REPLICAS: How many worker pods you want 
     minReplicas: 1
     maxReplicas: 10
     # logical group name, for this called small-group, also can be functional
@@ -96,6 +76,7 @@ spec:
       spec:
         #nodeSelector:
         # node.kubernetes.io/instance-type: "ml.g5.8xlarge"
+        # sagemaker.amazonaws.com/node-health-status: Schedulable
         securityContext:
           runAsUser: 0
           runAsGroup: 0
@@ -118,22 +99,11 @@ spec:
               memory: 24Gi
               nvidia.com/gpu: 1
           volumeMounts:                                    ## VOLUMEMOUNTS: Mount your S3 CSI EKS Add-On to worker pods
-          # - name: s3-storage
-          #   mountPath: /s3
           - name: ray-logs
             mountPath: /tmp/ray
           - name: fsx-storage
             mountPath: /fsx
-        # Please add the following taints to the GPU node.
-        # tolerations:                                       ## TOLERATIONS: These would be the taints set on your node groups
-        #   - key: "ray.io/node-type"                        ## in this case, these taints are set on my worker node group
-        #     operator: "Equal"                              ## if no taints, leave blank or delete "tolerations"
-        #     value: "worker"
-        #     effect: "NoSchedule"
         volumes:
-        # - name: s3-storage
-        #   persistentVolumeClaim:
-        #     claimName: s3-claim
         - name: fsx-storage
           persistentVolumeClaim:
             claimName: fsx-claim
