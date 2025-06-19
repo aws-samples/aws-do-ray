@@ -33,7 +33,7 @@ chmod +x 4.deploy-anyscale.sh
 ```
 
 
-Please see <blog out soon> for more details!
+Please see { Blog Out Soon } for more details!
 
 
 
