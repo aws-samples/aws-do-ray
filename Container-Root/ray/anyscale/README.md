@@ -3,8 +3,9 @@
 [Anyscale](https://www.anyscale.com/)'s Ray ecosystem can build upon this solid foundation with advanced distributed computing capabilities. [RayTurbo](https://www.anyscale.com/product/platform/rayturbo) features optimize computational performance across the cluster, while a unified control plane simplifies management of complex distributed systems. The platform excels at dynamic container scalability, intelligent workload distribution and efficient task allocation across the cluster. Optimized multi-GPU communication patterns ensure efficient data transfer, creating a seamless distributed computing environment perfectly suited for demanding ML workloads. Anyscale aims to remove the complexity of building and managing distributed infrastructure, allowing developers to focus on building AI/ML applications.
 
 <img alt="Anyscale on EKS" src="../../../img/anyscale-on-eks.png" width="50%" align="left" />
-<img alt="Anyscale on HyperPod EKS" src="../../../img/anyscale-on-hyperpod.png" width="50%" align="right" />
+<img alt="Anyscale on HyperPod EKS" src="../../../img/anyscale-on-hyperpod.png" width="45%" align="right" />
 
+## Deployment
 
 1. Review the `env_vars` file. You can leave the values as default or make desired changes.
 
