@@ -1,12 +1,12 @@
 name: dt-pytorch-job
 image_uri: 'anyscale/ray:2.46.0-py312-cu128'
-compute_config: 'flo:1'
+compute_config: 'compute_config:1'
 working_dir: ./
 env_vars:
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   AWS_DEFAULT_REGION: ${AWS_REGION}
   NCCL_DEBUG: INFO
-cloud: mvincig 
+cloud: ${ANYSCALE_CLOUD_NAME} 
 requirements: ./requirements.txt
 entrypoint: python dt-pytorch.py
