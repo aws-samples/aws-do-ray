@@ -1,31 +1,7 @@
 import ray
 import time
 
- #Initialize Ray with runtime environment
-# ray.init(
-#     runtime_env={
-#         "pip": [
-#             "datasets",
-#             "evaluate",
-#             "transformers>=4.26.0",
-#             "torch",
-#             "pytorch_lightning>=2.1.0",
-#             "torchvision",
-#             "torchaudio",
-#             "numpy",
-#             "datasets",
-#             "tqdm",
-#             "click",
-#             "torchdata",
-#             "torchmetrics",
-#             "torch_optimizer",
-#             "accelerate",
-#             "scikit-learn",
-#             "Pillow==9.5.0",
-#             "protobuf==3.20.3"
-#         ]
-#     }
-# )
+
 ray.init()
 
 # Wait for runtime env to be setup
@@ -166,8 +142,8 @@ def main():
 
     # Load Dataset
     dataset = load_dataset('glue', 'cola', download_mode='force_redownload')
-    train_dataset = ray.data.from_huggingface(dataset["train"])
-    validation_dataset = ray.data.from_huggingface(dataset["validation"])
+    train_dataset = ray.data.from_items(dataset["train"])
+    validation_dataset = ray.data.from_items(dataset["validation"])
 
     # Tokenize
     train_dataset = train_dataset.map_batches(tokenize_sentence, batch_format="numpy")
