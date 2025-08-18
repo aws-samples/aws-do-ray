@@ -19,7 +19,7 @@ kubectl get pods -n anyscale
 ### [PyTorch Fashion MNIST](https://docs.pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html)
 This example implements distributed training of a neural network for Fashion MNIST classification using Ray Train framework with Sagemaker Hyperpod and EKS orchestration.
 
-Note: Please ensure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_REGION` variables are populated.
+Note: Please ensure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` and `ANYSCALE_CLOUD_NAME` variables are populated.
 
 1. Create [Anyscale Compute Config](https://docs.anyscale.com/configuration/compute/overview/)
 ```
