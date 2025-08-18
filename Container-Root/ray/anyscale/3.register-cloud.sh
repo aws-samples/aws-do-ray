@@ -55,6 +55,34 @@ else
     exit 1
 fi
 
+echo "Adding S3 read/write permissions to Node Role for Anyscale operator"
+cat > anyscale-s3-policy.json << 'EOF'
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:ListBucket",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::*/*",
+                "arn:aws:s3:::*"
+            ]
+        }
+    ]
+}
+EOF
+aws iam create-policy --policy-name anyscale --policy-document file://anyscale-s3-policy.json
+ACCOUNT_ID=$(echo $ROLE | cut -d':' -f5)
+aws iam attach-role-policy \
+    --role-name $ROLE \
+    --policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/anyscale
+
+
 anyscale cloud register \
   --name ${ANYSCALE_CLOUD_NAME} \
   --provider aws \

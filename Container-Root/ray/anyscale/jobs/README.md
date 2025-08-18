@@ -24,13 +24,11 @@ Note: Please ensure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_REGIO
 1. Create [Anyscale Compute Config](https://docs.anyscale.com/configuration/compute/overview/)
 ```
 cd dt-pytorch
-chmod +x 1.create-compute-config.sh
 ./1.create-compute-config.sh
 ```
 
 2. Submit Job
 ```
-chmod +x 2.submit-dt-pytorch.sh
 ./2.submit-dt-pytorch.sh
 ```
 

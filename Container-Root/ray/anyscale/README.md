@@ -15,25 +15,21 @@
 
 2. Deploy requirements
 ```
-chmod +x 1.deploy-requirements.sh
 ./1.deploy-requirements.sh
 ```
 
 3. Create [Elastic File System](https://aws.amazon.com/efs/) (EFS)
 ```
-chmod +x 2.create-efs.sh
 ./2.create-efs.sh
 ```
 
 4. Register Anyscale Cloud
 ```
-chmod +x 3.register-cloud.sh
 ./3.register-cloud.sh
 ```
 
 5. Deploy Kubernetes Anyscale Operator
 ```
-chmod +x 4.deploy-anyscale.sh
 ./4.deploy-anyscale.sh
 ```
 
