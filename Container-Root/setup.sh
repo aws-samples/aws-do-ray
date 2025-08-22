@@ -89,3 +89,8 @@ python -m pip install torchx[kubernetes]
 #   fi
 # fi
 
+# cleanup
+sudo apt-get clean
+sudo apt-get autoclean
+sudo apt-get autoremove
+pip cache purge
