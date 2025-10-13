@@ -38,7 +38,12 @@
 Blog on Anyscale on HyperPod: [**Use Amazon SageMaker HyperPod and Anyscale for next-generation distributed computing**](https://aws.amazon.com/blogs/machine-learning/use-amazon-sagemaker-hyperpod-and-anyscale-for-next-generation-distributed-computing/) 
 
 Demo of running Anyscale on HyperPod with autoscaling:
-[![Anyscale Video](https://img.youtube.com/vi/SUA3wJnA5G0/0.jpg)](https://youtu.be/SUA3wJnA5G0)
+
+<div align="center">
+  <a href="https://youtu.be/SUA3wJnA5G0">
+    <img src="https://img.youtube.com/vi/SUA3wJnA5G0/0.jpg" alt="Anyscale Video" width="48%" />
+  </a>
+</div>
 
 
 
