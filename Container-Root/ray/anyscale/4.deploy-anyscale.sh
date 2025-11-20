@@ -30,11 +30,10 @@ echo "Cloud Deployment ID: $CLOUD_DEPLOYMENT_ID"
 
 # Deploy Anyscale operator
 helm upgrade --install anyscale-operator anyscale/anyscale-operator \
-    --set-string cloudDeploymentId=${CLOUD_DEPLOYMENT_ID} \
-    --set-string cloudProvider=aws \
-    --set-string region=${AWS_REGION} \
-    --set-string workloadServiceAccountName=anyscale-operator \
+    --set-string global.cloudDeploymentId=${CLOUD_DEPLOYMENT_ID} \
+    --set-string global.cloudProvider=aws \
+    --set-string global.aws.region=${AWS_REGION} \
+    --set-string workloads.serviceAccount.name=anyscale-operator \
     --namespace anyscale
-
 
 kubectl patch deployment anyscale-operator -n anyscale --patch "$(cat patch.yaml)"
