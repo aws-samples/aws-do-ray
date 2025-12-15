@@ -9,7 +9,7 @@ export AWS_AZ=$(aws sagemaker describe-cluster --cluster-name ${AWS_EKS_HYPERPOD
 
 export ANYSCALE_CLOUD_NAME="anyscale-cloud" # Modify this field to change name for Anyscale cloud
 
-export EFS_NAME="efs-anyscale" # Modify this field to change name for Anyscale cloud
+export EFS_NAME="efs-anyscale" # Modify this field to change name for EFS
 
 # EFS Configuration
 export PERFORMANCE_MODE="generalPurpose"
