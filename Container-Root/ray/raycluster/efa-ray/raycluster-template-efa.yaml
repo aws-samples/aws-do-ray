@@ -41,6 +41,8 @@ spec:
               value: "warn"
             - name: NCCL_SOCKET_IFNAME
               value: "eth0"
+            - name: HF_TOKEN
+              value: ${HF_TOKEN}
             # - name: AWS_ACCESS_KEY_ID       ## after running ./deploy/kubectl-secrets/kubectl-secret-keys.sh
             #   valueFrom:                    ## if you need your code to access other private S3 buckets
             #     secretKeyRef:
@@ -124,6 +126,8 @@ spec:
               value: "warn"
             - name: NCCL_SOCKET_IFNAME
               value: "eth0"
+            - name: HF_TOKEN
+              value: ${HF_TOKEN}
           lifecycle:
             preStop:
               exec:
