@@ -20,20 +20,28 @@ ENV PATH=/opt/anaconda3/bin:$PATH
 RUN pip --no-cache-dir install -c /tmp/requirements_compiled.txt \
     "ray[all]==2.42.1"
 
+
 # Install Python dependencies for PyTorch, Ray, Hugging Face, and more
 RUN pip install --no-cache-dir \
-    torch torchvision torchaudio \
-    numpy \
-    pytorch-lightning \
-    transformers datasets evaluate tqdm click \
-    ray[train] ray[air] \
-    ray[train-torch] ray[train-lightning] \
-    torchdata \
-    torchmetrics \
-    torch_optimizer \
-    accelerate \
-    scikit-learn \
-    Pillow==9.5.0 \
+    torch==2.7.0 \
+    torchvision==0.22.0 \
+    torchaudio==2.7.0 \
+    numpy==1.26.4 \
+    pytorch-lightning==2.6.0 \
+    transformers==4.53.3 \
+    datasets==4.0.0 \
+    evaluate==0.4.6 \
+    click==8.1.7 \
+    ray[train] \
+    ray[air] \
+    ray[train-torch] \
+    ray[train-lightning] \
+    torchdata==0.11.0 \
+    torchmetrics==1.8.2 \
+    torch_optimizer==0.3.0 \
+    accelerate==1.12.0 \
+    scikit-learn==1.8.0 \
+    Pillow==12.1.0 \
     protobuf==3.20.3
 
 RUN pip install --upgrade datasets transformers
