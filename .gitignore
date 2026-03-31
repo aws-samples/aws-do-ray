@@ -2,3 +2,4 @@
 Container-Root/version.txt
 Container-Root/ray/anyscale/efs_env.sh
 
+__pycache__/
