@@ -1,0 +1,147 @@
+apiVersion: ray.io/v1
+kind: RayService
+metadata:
+  name: disaggregated-prefill-decode
+spec:
+  # ── Ray Serve application ─────────────────────────────────────────
+  # Uses Ray Serve LLM's build_pd_openai_app to deploy an
+  # OpenAI-compatible endpoint with disaggregated prefill/decode.
+  #
+  # The prefill instances process input prompts and transfer KV cache
+  # to decode instances via NIXL for token generation.
+  serveConfigV2: |
+    applications:
+      - name: disaggregated-prefill-decode
+        import_path: ray.serve.llm:build_pd_openai_app
+        route_prefix: "/"
+        args:
+          prefill_config:
+            model_loading_config:
+              model_id: Qwen/Qwen2.5-7B-Instruct
+            accelerator_type: H200
+            engine_kwargs:
+              kv_transfer_config:
+                kv_connector: NixlConnector
+                kv_role: kv_both
+            deployment_config:
+              autoscaling_config:
+                min_replicas: 1
+                max_replicas: 2
+
+          decode_config:
+            model_loading_config:
+              model_id: Qwen/Qwen2.5-7B-Instruct
+            accelerator_type: H200
+            engine_kwargs:
+              kv_transfer_config:
+                kv_connector: NixlConnector
+                kv_role: kv_both
+            deployment_config:
+              autoscaling_config:
+                min_replicas: 1
+                max_replicas: 4
+
+  # ── Ray cluster configuration ─────────────────────────────────────
+  rayClusterConfig:
+    rayVersion: '2.44.0'
+
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: '0.0.0.0'
+        num-gpus: '0'
+      template:
+        spec:
+          containers:
+          - name: ray-head
+            image: rayproject/ray-llm:latest-py311-cu128
+            ports:
+            - containerPort: 6379
+              name: gcs
+            - containerPort: 8265
+              name: dashboard
+            - containerPort: 10001
+              name: client
+            - containerPort: 8000
+              name: serve
+            volumeMounts:
+            - mountPath: /tmp/ray
+              name: ray-logs
+            resources:
+              limits:
+                cpu: "4"
+                memory: "16G"
+              requests:
+                cpu: "4"
+                memory: "16G"
+          volumes:
+          - name: ray-logs
+            emptyDir: {}
+
+    workerGroupSpecs:
+    # ── Prefill workers ──────────────────────────────────────────────
+    # Prefill is compute-bound: benefits from high FLOPS GPUs.
+    - replicas: 1
+      minReplicas: 1
+      maxReplicas: 2
+      groupName: prefill-group
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+          - name: ray-worker-prefill
+            image: rayproject/ray-llm:latest-py311-cu128
+            lifecycle:
+              preStop:
+                exec:
+                  command: ["/bin/sh", "-c", "ray stop"]
+            resources:
+              limits:
+                cpu: "8"
+                memory: "32G"
+                nvidia.com/gpu: 1
+              requests:
+                cpu: "6"
+                memory: "24G"
+                nvidia.com/gpu: 1
+          # Uncomment for node affinity / tolerations:
+          # tolerations:
+          # - key: "ray.io/node-type"
+          #   operator: "Equal"
+          #   value: "worker"
+          #   effect: "NoSchedule"
+          # nodeSelector:
+          #   node.kubernetes.io/instance-type: g5.2xlarge
+
+    # ── Decode workers ───────────────────────────────────────────────
+    # Decode is memory-bandwidth-bound: benefits from high HBM GPUs.
+    - replicas: 1
+      minReplicas: 1
+      maxReplicas: 4
+      groupName: decode-group
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+          - name: ray-worker-decode
+            image: rayproject/ray-llm:latest-py311-cu128
+            lifecycle:
+              preStop:
+                exec:
+                  command: ["/bin/sh", "-c", "ray stop"]
+            resources:
+              limits:
+                cpu: "8"
+                memory: "32G"
+                nvidia.com/gpu: 1
+              requests:
+                cpu: "6"
+                memory: "24G"
+                nvidia.com/gpu: 1
+          # Uncomment for node affinity / tolerations:
+          # tolerations:
+          # - key: "ray.io/node-type"
+          #   operator: "Equal"
+          #   value: "worker"
+          #   effect: "NoSchedule"
+          # nodeSelector:
+          #   node.kubernetes.io/instance-type: g5.2xlarge

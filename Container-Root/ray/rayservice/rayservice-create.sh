@@ -6,7 +6,7 @@ if [ -z "$1" ]; then
     echo ""
     echo "Error: No model name provided."
     echo "Usage: ./rayservice-create.sh <ModelName>"
-    echo "Available model names: detr, mobilenet, stable-diffusion"
+    echo "Available model names: detr, mobilenet, stable-diffusion, disaggregated_prefill_decode"
     echo ""
     exit 1
 fi
