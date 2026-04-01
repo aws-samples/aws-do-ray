@@ -19,7 +19,7 @@ import sys
 
 URL = "http://127.0.0.1:8000/v1/chat/completions"
 
-MODEL_ID = "meta-llama/Llama-3.1-8B-Instruct"
+MODEL_ID = "Qwen/Qwen2.5-7B-Instruct"
 
 
 def test_chat_completion():

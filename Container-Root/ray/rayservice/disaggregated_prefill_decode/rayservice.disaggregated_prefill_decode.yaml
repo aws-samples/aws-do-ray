@@ -53,7 +53,7 @@ spec:
         spec:
           containers:
           - name: ray-head
-            image: rayproject/ray-llm:latest
+            image: rayproject/ray-llm:latest-py311-cu128
             ports:
             - containerPort: 6379
               name: gcs
@@ -89,7 +89,7 @@ spec:
         spec:
           containers:
           - name: ray-worker-prefill
-            image: rayproject/ray-llm:latest
+            image: rayproject/ray-llm:latest-py311-cu128
             lifecycle:
               preStop:
                 exec:
@@ -123,7 +123,7 @@ spec:
         spec:
           containers:
           - name: ray-worker-decode
-            image: rayproject/ray-llm:latest
+            image: rayproject/ray-llm:latest-py311-cu128
             lifecycle:
               preStop:
                 exec:
